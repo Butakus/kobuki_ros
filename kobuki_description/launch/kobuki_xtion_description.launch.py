@@ -20,6 +20,8 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.actions import SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
@@ -30,22 +32,33 @@ def generate_launch_description():
     with open(urdf_file, 'r') as info:
         robot_desc = info.read()
 
+    ld = LaunchDescription([
+        DeclareLaunchArgument('namespace', default_value='', description='Namespace for the robot'),
+    ])
+
+    namespace = LaunchConfiguration('namespace')
+
     # Robot description
     robot_model = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         parameters=[{'robot_description': robot_desc}],
-        arguments=[urdf_file]
+        arguments=[urdf_file],
+        namespace=namespace
     )
 
     # TF Tree
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
-        name='joint_state_publisher'
+        name='joint_state_publisher',
+        namespace=namespace,
     )
 
     ld = LaunchDescription()
+
+    ld.add_action(SetRemap(src='/tf', dst='/robot1/tf'))
+    ld.add_action(SetRemap(src='/tf_static', dst='/robot1/tf_static'))
 
     # Add any actions
     ld.add_action(robot_model)
