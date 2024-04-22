@@ -20,6 +20,8 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 import launch_ros.descriptions
 from launch.substitutions import Command
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
@@ -27,19 +29,31 @@ def generate_launch_description():
 
     urdf_xacro_file = os.path.join(kobuki_pkg, 'urdf', 'kobuki_hexagons_asus_xtion_pro.urdf.xacro')
 
+    namespace_arg = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace to apply to the nodes'
+    )
+
+    namespace = LaunchConfiguration('namespace')
+
     # Robot description
     robot_model = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        namespace=namespace,
         parameters=[{'robot_description': launch_ros.descriptions.ParameterValue(
-                Command(['xacro ', urdf_xacro_file]), value_type=str),}
-    ])
+                Command(['xacro ', urdf_xacro_file]), value_type=str),}],
+        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
+    )
 
     # TF Tree
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
-        name='joint_state_publisher'
+        name='joint_state_publisher',
+        namespace=namespace,
+        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
     )
 
     ld = LaunchDescription()
@@ -47,5 +61,6 @@ def generate_launch_description():
     # Add any actions
     ld.add_action(robot_model)
     ld.add_action(joint_state_publisher_node)
+    ld.add_action(namespace_arg)
 
     return ld
