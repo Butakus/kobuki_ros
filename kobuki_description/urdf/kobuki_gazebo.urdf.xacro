@@ -32,7 +32,7 @@
       <visual>
         <geometry>
           <!-- new mesh -->
-          <mesh filename="package://kobuki_description/meshes/main_body.dae" />
+          <mesh filename="file://$(find kobuki_description)/meshes/main_body.dae" />
         </geometry>
         <origin xyz="0.001 0 0.05199" rpy="0 0 0"/>
       </visual>
@@ -68,7 +68,7 @@
     <link name="wheel_left_link">
       <visual>
         <geometry>
-          <mesh filename="package://kobuki_description/meshes/wheel.dae"/>
+          <mesh filename="file://$(find kobuki_description)/meshes/wheel.dae"/>
         </geometry>
         <origin xyz="0 0 0" rpy="0 0 0"/>
       </visual>
@@ -96,7 +96,7 @@
     <link name="wheel_right_link">
       <visual>
         <geometry>
-          <mesh filename="package://kobuki_description/meshes/wheel.dae"/>
+          <mesh filename="file://$(find kobuki_description)/meshes/wheel.dae"/>
         </geometry>
         <origin xyz="0 0 0" rpy="0 0 0"/>
       </visual>
@@ -220,24 +220,30 @@
     </link>
 
     <gazebo>
-      <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-        <update_rate>10</update_rate>
+      <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+        <!-- Remove <ros> tag. -->
+      
+        <!-- wheels -->
         <left_joint>wheel_left_joint</left_joint>
         <right_joint>wheel_right_joint</right_joint>
-        <wheel_separation>0.230</wheel_separation>
-        <wheel_diameter>0.070</wheel_diameter>
-        <max_wheel_torque>1.0</max_wheel_torque>
-        <max_wheel_acceleration>1.0</max_wheel_acceleration>
-        <command_topic>cmd_vel</command_topic>
-        <!-- output -->
-        <publish_odom>true</publish_odom>
-        <publish_odom_tf>true</publish_odom_tf>
-        <publish_wheel_tf>true</publish_wheel_tf>
-        <odometry_topic>odom</odometry_topic>
-        <odometry_frame>odom</odometry_frame>
-        <robot_base_frame>base_link</robot_base_frame>
-	    </plugin>
-	  </gazebo>
+      
+        <!-- kinematics -->
+        <wheel_separation>0.223087</wheel_separation>
+        <wheel_radius>0.035</wheel_radius> <!-- computed from <wheel_diameter> in the original plugin-->
+      
+        <!-- limits -->
+        <max_linear_acceleration>1.0</max_linear_acceleration> <!-- computed from <max_linear_acceleration> in the original plugin-->
+      
+        <topic>cmd_vel</topic> <!-- from <commant_topic> -->
+      
+        <child_frame_id>base_footprint</child_frame_id> <!-- from <robot_base_frame> -->
+        <odom_publisher_frequency>30</odom_publisher_frequency> <!-- from <update_rate>-->
+      
+        <tf_topic>/tf</tf_topic> <!-- Short topic name for tf output -->
+      
+      </plugin>
+    </gazebo>
+    
 
      <gazebo reference="camera_link">
   <sensor name="camera" type="depth">
@@ -254,7 +260,7 @@
         <far>3</far>
       </clip>
     </camera>
-    <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+    <!-- <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
       <baseline>0.2</baseline>
       <alwaysOn>true</alwaysOn>
       <updateRate>1.0</updateRate>
@@ -271,7 +277,7 @@
       <Cy>0</Cy>
       <focalLength>0</focalLength>
       <hackBaseline>0</hackBaseline>
-    </plugin>
+    </plugin> -->
   </sensor>
 </gazebo>
 
@@ -284,7 +290,7 @@
 <link name="laser_link">
 	<visual>
         <geometry>
-          <mesh filename="package://kobuki_description/meshes/sensors/rplidar.dae" scale="0.001 0.001 0.001" /> 
+          <mesh filename="file://$(find kobuki_description)/meshes/sensors/rplidar.dae" scale="0.001 0.001 0.001" /> 
         </geometry>
         <origin xyz="0 0 0.025" rpy="-1.5707 0 -1.5707"/>
       </visual>
@@ -322,13 +328,13 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin filename="libgazebo_ros_ray_sensor.so" name="scan">
+      <!-- <plugin filename="libgazebo_ros_ray_sensor.so" name="scan">
         <ros>
           <remapping>~/out:=scan</remapping>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>laser_link</frame_name>
-      </plugin>
+      </plugin> -->
     </sensor>
   </gazebo>
 
