@@ -18,15 +18,15 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, Command
-from launch_ros.actions import Node
-import launch_ros.descriptions
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
+
+    kobuki_dir = get_package_share_directory('kobuki_description')
 
     declare_x_cmd = DeclareLaunchArgument('x', default_value='0.0')
     declare_y_cmd = DeclareLaunchArgument('y', default_value='0.0')
@@ -34,26 +34,13 @@ def generate_launch_description():
     declare_roll_cmd = DeclareLaunchArgument('R', default_value='0.0')
     declare_pitch_cmd = DeclareLaunchArgument('P', default_value='0.0')
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
-    model_name = DeclareLaunchArgument('model_name', default_value='kobuki',)
-
-    kobuki_dir = get_package_share_directory('kobuki_description')
-
-    urdf_xacro_file = os.path.join(kobuki_dir, 'urdf', 'kobuki_hexagons_asus_xtion_pro_sim.urdf.xacro')
-
-    robot_model = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        parameters=[{
-            'robot_description': launch_ros.descriptions.ParameterValue(
-                Command(['xacro ', urdf_xacro_file]), value_type=str),
-            'use_sim_time': True
-        }])
-
-    joint_state_publisher_node = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        parameters=[{'use_sim_time': True}]
+    model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
+    gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
+    
+    robot_description = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('kobuki_description'),
+            'launch/'), 'kobuki_description.launch.py']),
     )
 
     gazebo_spawn_robot = Node(
@@ -97,8 +84,8 @@ def generate_launch_description():
     ld.add_action(declare_pitch_cmd)
     ld.add_action(declare_yaw_cmd)
     ld.add_action(model_name)
-    ld.add_action(joint_state_publisher_node)
-    ld.add_action(robot_model)
+    ld.add_action(gazebo_arg)
+    ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
     ld.add_action(bridge)
 

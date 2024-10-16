@@ -16,7 +16,6 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 import launch_ros.descriptions
 from launch.substitutions import Command
@@ -27,7 +26,28 @@ def generate_launch_description():
 
     kobuki_pkg = get_package_share_directory('kobuki_description')
 
-    urdf_xacro_file = os.path.join(kobuki_pkg, 'urdf', 'kobuki_hexagons_asus_xtion_pro.urdf.xacro')
+    # Definir los argumentos que se pasarán desde la línea de comandos
+    lidar_arg = DeclareLaunchArgument(
+        'lidar', default_value='false',
+        description='Enable lidar sensor')
+    
+    camera_arg = DeclareLaunchArgument(
+        'camera', default_value='false',
+        description='Enable camera sensor')
+
+    structure_arg = DeclareLaunchArgument(
+        'structure', default_value='true',
+        description='Enable structure elements')
+    
+    gazebo_arg = DeclareLaunchArgument(
+        'gazebo', default_value='false',
+        description='Enable gazebo plugins')
+
+    description_file = DeclareLaunchArgument(
+        'description_file',
+        default_value=os.path.join(kobuki_pkg, 'urdf', 'kobuki.urdf.xacro'),
+        description='Absolute path to the robot description file'
+    )
 
     namespace_arg = DeclareLaunchArgument(
         'namespace',
@@ -35,15 +55,20 @@ def generate_launch_description():
         description='Namespace to apply to the nodes'
     )
 
-    namespace = LaunchConfiguration('namespace')
-
-    # Robot description
     robot_model = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        namespace=namespace,
-        parameters=[{'robot_description': launch_ros.descriptions.ParameterValue(
-                Command(['xacro ', urdf_xacro_file]), value_type=str),}],
+        namespace=LaunchConfiguration('namespace'),
+        parameters=[{
+            'robot_description': launch_ros.descriptions.ParameterValue(
+                Command([
+                    'xacro ', LaunchConfiguration('description_file'),
+                    ' lidar:=', LaunchConfiguration('lidar'),
+                    ' camera:=', LaunchConfiguration('camera'),
+                    ' structure:=', LaunchConfiguration('structure'),
+                    ' gazebo:=', LaunchConfiguration('gazebo')
+                ]), value_type=str),
+        }],
         remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
     )
 
@@ -52,15 +77,19 @@ def generate_launch_description():
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        namespace=namespace,
+        namespace=LaunchConfiguration('namespace'),
         remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
     )
 
     ld = LaunchDescription()
 
-    # Add any actions
+    ld.add_action(lidar_arg)
+    ld.add_action(camera_arg)
+    ld.add_action(structure_arg)
+    ld.add_action(gazebo_arg)
+    ld.add_action(description_file)
+    ld.add_action(namespace_arg)
     ld.add_action(robot_model)
     ld.add_action(joint_state_publisher_node)
-    ld.add_action(namespace_arg)
 
     return ld
