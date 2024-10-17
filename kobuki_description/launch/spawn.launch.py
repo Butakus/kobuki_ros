@@ -18,15 +18,13 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
-
-    kobuki_dir = get_package_share_directory('kobuki_description')
 
     declare_x_cmd = DeclareLaunchArgument('x', default_value='0.0')
     declare_y_cmd = DeclareLaunchArgument('y', default_value='0.0')
@@ -36,6 +34,8 @@ def generate_launch_description():
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
     model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
+    camera_arg = DeclareLaunchArgument('camera', default_value='true')
+    lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
     
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -61,21 +61,6 @@ def generate_launch_description():
         ],
     )
 
-    bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        name='bridge_ros_gz',
-        parameters=[
-            {
-                'config_file': os.path.join(
-                    kobuki_dir, 'config/bridge', 'kobuki_bridge.yaml'
-                ),
-                'use_sim_time': True,
-            }
-        ],
-        output='screen',
-    )
-
     ld = LaunchDescription()
     ld.add_action(declare_x_cmd)
     ld.add_action(declare_y_cmd)
@@ -85,8 +70,10 @@ def generate_launch_description():
     ld.add_action(declare_yaw_cmd)
     ld.add_action(model_name)
     ld.add_action(gazebo_arg)
+    ld.add_action(camera_arg)
+    ld.add_action(lidar_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
-    ld.add_action(bridge)
+
 
     return ld

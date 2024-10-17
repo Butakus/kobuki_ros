@@ -19,14 +19,63 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 import launch_ros.descriptions
 from launch.substitutions import Command
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
+
+
+def start_bridge(context):
+    if LaunchConfiguration('gazebo').perform(context) == 'true':
+        kobuki_pkg = get_package_share_directory('kobuki_description')
+
+        bridge = Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            name='bridge_ros_gz',
+            parameters=[
+                {
+                    'config_file': os.path.join(
+                        kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
+                    ),
+                    'use_sim_time': True,
+                }
+            ],
+            output='screen',
+        )
+
+        return [bridge]
+    
+    return []
+
+def start_camera(context):
+    if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
+        camera_bridge_image = Node(
+            package='ros_gz_image',
+            executable='image_bridge',
+            name='bridge_gz_ros_camera_image',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+            }],
+            arguments=['/rgbd_camera/image'])
+
+        camera_bridge_depth = Node(
+            package='ros_gz_image',
+            executable='image_bridge',
+            name='bridge_gz_ros_camera_depth',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+            }],
+            arguments=['/rgbd_camera/depth_image'])
+        
+        return [camera_bridge_image, camera_bridge_depth]
+   
+    return []
 
 def generate_launch_description():
 
     kobuki_pkg = get_package_share_directory('kobuki_description')
 
-    # Definir los argumentos que se pasarán desde la línea de comandos
     lidar_arg = DeclareLaunchArgument(
         'lidar', default_value='false',
         description='Enable lidar sensor')
@@ -82,7 +131,6 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
-
     ld.add_action(lidar_arg)
     ld.add_action(camera_arg)
     ld.add_action(structure_arg)
@@ -91,5 +139,7 @@ def generate_launch_description():
     ld.add_action(namespace_arg)
     ld.add_action(robot_model)
     ld.add_action(joint_state_publisher_node)
+    ld.add_action(OpaqueFunction(function=start_bridge))
+    ld.add_action(OpaqueFunction(function=start_camera))
 
     return ld
