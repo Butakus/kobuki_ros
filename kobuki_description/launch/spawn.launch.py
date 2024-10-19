@@ -36,6 +36,7 @@ def generate_launch_description():
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
     camera_arg = DeclareLaunchArgument('camera', default_value='true')
     lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
+    use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -72,6 +73,7 @@ def generate_launch_description():
     ld.add_action(gazebo_arg)
     ld.add_action(camera_arg)
     ld.add_action(lidar_arg)
+    ld.add_action(use_sim_time_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
 

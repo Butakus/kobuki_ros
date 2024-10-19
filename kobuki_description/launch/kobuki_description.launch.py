@@ -98,6 +98,8 @@ def generate_launch_description():
         description='Absolute path to the robot description file'
     )
 
+    use_sim_time = DeclareLaunchArgument('use_sim_time', default_value='false')
+
     namespace_arg = DeclareLaunchArgument(
         'namespace',
         default_value='',
@@ -117,8 +119,8 @@ def generate_launch_description():
                     ' structure:=', LaunchConfiguration('structure'),
                     ' gazebo:=', LaunchConfiguration('gazebo')
                 ]), value_type=str),
+            'use_sim_time': LaunchConfiguration('use_sim_time')
         }],
-        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
     )
 
     # TF Tree
@@ -127,7 +129,9 @@ def generate_launch_description():
         executable='joint_state_publisher',
         name='joint_state_publisher',
         namespace=LaunchConfiguration('namespace'),
-        remappings=[('/tf', 'tf'), ('/tf_static', 'tf_static')]
+        parameters=[{
+            'use_sim_time': LaunchConfiguration('use_sim_time')
+        }]
     )
 
     ld = LaunchDescription()
@@ -137,6 +141,7 @@ def generate_launch_description():
     ld.add_action(gazebo_arg)
     ld.add_action(description_file)
     ld.add_action(namespace_arg)
+    ld.add_action(use_sim_time)
     ld.add_action(robot_model)
     ld.add_action(joint_state_publisher_node)
     ld.add_action(OpaqueFunction(function=start_bridge))
