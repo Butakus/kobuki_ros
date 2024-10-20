@@ -9,6 +9,7 @@
   <xacro:arg name="lidar" default="false" />
   <xacro:arg name="camera" default="false" />
   <xacro:arg name="structure" default="false" />
+  <xacro:arg name="prefix" default="false" />
   <xacro:arg name="gazebo" default="false" />
 
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki_base.urdf.xacro" />
@@ -47,7 +48,7 @@
 
   <xacro:if value="$(arg gazebo)">
     <xacro:include filename="$(find kobuki_description)/urdf/kobuki_gazebo.urdf.xacro"/>
-    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)"/>
+    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)" prefix="$(arg prefix)"/>
   </xacro:if>
   
 </robot>

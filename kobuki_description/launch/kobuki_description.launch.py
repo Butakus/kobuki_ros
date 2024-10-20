@@ -37,8 +37,13 @@ def start_bridge(context):
                         kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
                     ),
                     'use_sim_time': True,
+                    # 'namespace': LaunchConfiguration('prefix'),
+                    # 'expand_gz_topic_names': True,
+                    
+
                 }
             ],
+            #arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist'],
             output='screen',
         )
 
@@ -87,6 +92,10 @@ def generate_launch_description():
     structure_arg = DeclareLaunchArgument(
         'structure', default_value='true',
         description='Enable structure elements')
+
+    prefix_arg = DeclareLaunchArgument(
+        'prefix', default_value='',
+        description='Prefix to apply to the topics')
     
     gazebo_arg = DeclareLaunchArgument(
         'gazebo', default_value='false',
@@ -101,10 +110,10 @@ def generate_launch_description():
     use_sim_time = DeclareLaunchArgument('use_sim_time', default_value='false')
 
     namespace_arg = DeclareLaunchArgument(
-        'namespace',
-        default_value='',
+        'namespace', default_value='',
         description='Namespace to apply to the nodes'
     )
+
 
     robot_model = Node(
         package='robot_state_publisher',
@@ -117,6 +126,7 @@ def generate_launch_description():
                     ' lidar:=', LaunchConfiguration('lidar'),
                     ' camera:=', LaunchConfiguration('camera'),
                     ' structure:=', LaunchConfiguration('structure'),
+                    ' prefix:=', LaunchConfiguration('prefix'),
                     ' gazebo:=', LaunchConfiguration('gazebo')
                 ]), value_type=str),
             'use_sim_time': LaunchConfiguration('use_sim_time')
@@ -138,6 +148,7 @@ def generate_launch_description():
     ld.add_action(lidar_arg)
     ld.add_action(camera_arg)
     ld.add_action(structure_arg)
+    ld.add_action(prefix_arg)
     ld.add_action(gazebo_arg)
     ld.add_action(description_file)
     ld.add_action(namespace_arg)

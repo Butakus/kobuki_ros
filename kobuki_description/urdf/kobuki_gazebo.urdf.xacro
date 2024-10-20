@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <robot name="kobuki_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="kobuki_gazebo" params="lidar camera">
+  <xacro:macro name="kobuki_gazebo" params="lidar camera prefix">
 
     <gazebo>
       <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
@@ -10,12 +10,12 @@
         <wheel_separation>0.223087</wheel_separation>
         <wheel_radius>0.035</wheel_radius>
         <max_linear_acceleration>1.0</max_linear_acceleration> 
-        <topic>cmd_vel</topic>
+        <topic>$(arg prefix)/cmd_vel</topic>
         <odom_topic>odom</odom_topic>
         <frame_id>odom</frame_id>
         <child_frame_id>base_footprint</child_frame_id>
         <odom_publisher_frequency>30</odom_publisher_frequency>
-        <tf_topic>/tf</tf_topic>
+        <tf_topic>$(arg prefix)/tf</tf_topic>
       </plugin>
 
       <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
