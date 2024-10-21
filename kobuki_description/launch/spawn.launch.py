@@ -27,7 +27,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 def generate_launch_description():
 
     declare_x_cmd = DeclareLaunchArgument('x', default_value='0.0')
-    # declare_x_cmd2 = DeclareLaunchArgument('x2', default_value='5.0')
     declare_y_cmd = DeclareLaunchArgument('y', default_value='0.0')
     declare_z_cmd = DeclareLaunchArgument('z', default_value='0.0')
     declare_roll_cmd = DeclareLaunchArgument('R', default_value='0.0')
@@ -35,15 +34,16 @@ def generate_launch_description():
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
     model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
-    camera_arg = DeclareLaunchArgument('camera', default_value='true')
+    camera_arg = DeclareLaunchArgument('camera', default_value='false')
     lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
-    prefix_arg = DeclareLaunchArgument('prefix', default_value='r1')
+    prefix_arg = DeclareLaunchArgument('prefix', default_value='')
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('kobuki_description'),
             'launch/'), 'kobuki_description.launch.py']),
+        launch_arguments={'prefix': LaunchConfiguration('prefix')}.items()
     )
 
     gazebo_spawn_robot = Node(
@@ -63,26 +63,9 @@ def generate_launch_description():
             "-Y", LaunchConfiguration('Y'),
         ],
     )
-    # gazebo_spawn_robot2 = Node(
-    #         package="ros_gz_sim",
-    #         executable="create",
-    #         output="screen",
-    #         arguments=[
-    #             "-model",
-    #             LaunchConfiguration('model_name'),
-    #             "-topic",
-    #             "robot_description",
-    #             "-x", LaunchConfiguration('x2'),
-    #             "-y", LaunchConfiguration('y'),
-    #             "-z", LaunchConfiguration('z'),
-    #             "-R", LaunchConfiguration('R'),
-    #             "-P", LaunchConfiguration('P'),
-    #             "-Y", LaunchConfiguration('Y'),
-    #         ],
-    #     )
+    
     ld = LaunchDescription()
     ld.add_action(declare_x_cmd)
-    # ld.add_action(declare_x_cmd2)
     ld.add_action(declare_y_cmd)
     ld.add_action(declare_z_cmd)
     ld.add_action(declare_roll_cmd)
@@ -96,7 +79,7 @@ def generate_launch_description():
     ld.add_action(use_sim_time_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
-    # ld.add_action(gazebo_spawn_robot2)
+
 
 
     return ld

@@ -23,9 +23,70 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 
+import os
+import yaml
+import tempfile
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+from launch import LaunchDescription
+
+import os
+import yaml
+import tempfile
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+def modify_yaml_with_prefix(original_yaml_path, prefix):
+    """
+    Modifica el archivo .yaml para añadir el prefijo a los nombres de los tópicos.
+    """
+    with open(original_yaml_path, 'r') as yaml_file:
+        yaml_data = yaml.safe_load(yaml_file)
+
+    # Verificar si yaml_data es una lista (esperado)
+    if not isinstance(yaml_data, list):
+        raise ValueError("El archivo YAML no tiene el formato correcto. Se esperaba una lista de diccionarios.")
+
+    # Iterar sobre cada remapeo de tópico y añadir el prefijo
+    for remap in yaml_data:
+        if isinstance(remap, dict):  # Asegurarse de que sea un diccionario
+            ros_topic_name = remap.get('ros_topic_name', '')
+            gz_topic_name = remap.get('gz_topic_name', '')
+
+            # Añadir el prefijo a los nombres de los tópicos
+            remap['ros_topic_name'] = f"{prefix}/{ros_topic_name}"
+            remap['gz_topic_name'] = f"/{prefix}{gz_topic_name}"
+        else:
+            print(f"Se omite un elemento no válido en el YAML: {remap}")
+
+    # Crear un archivo temporal para almacenar el nuevo .yaml
+    temp_yaml = tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')
+    temp_yaml_path = temp_yaml.name
+    yaml.dump(yaml_data, temp_yaml, default_flow_style=False)
+    temp_yaml.close()
+
+    return temp_yaml_path
+
 def start_bridge(context):
+    # Condición para ejecutar el bridge solo si 'gazebo' es 'true'
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
+
+        # Ruta original del archivo .yaml
+        original_yaml_path = os.path.join(
+            kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
+        )
+
+        # Obtener el prefijo del launch argument
+        prefix = LaunchConfiguration('prefix').perform(context)
+
+        # Modificar el archivo .yaml con el prefijo
+        modified_yaml_path = modify_yaml_with_prefix(original_yaml_path, prefix)
 
         bridge = Node(
             package='ros_gz_bridge',
@@ -33,23 +94,19 @@ def start_bridge(context):
             name='bridge_ros_gz',
             parameters=[
                 {
-                    'config_file': os.path.join(
-                        kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
-                    ),
+                    'config_file': modified_yaml_path,  # Usar el archivo modificado
                     'use_sim_time': True,
-                    # 'namespace': LaunchConfiguration('prefix'),
-                    # 'expand_gz_topic_names': True,
-                    
-
+                    'expand_gz_topic_names': True,  # Asegurarse que los nombres de tópicos se expandan correctamente
                 }
             ],
-            #arguments=['/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist'],
             output='screen',
         )
 
         return [bridge]
     
     return []
+
+
 
 def start_camera(context):
     if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
@@ -138,7 +195,7 @@ def generate_launch_description():
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        namespace=LaunchConfiguration('namespace'),
+        namespace=LaunchConfiguration('prefix'),
         parameters=[{
             'use_sim_time': LaunchConfiguration('use_sim_time')
         }]
