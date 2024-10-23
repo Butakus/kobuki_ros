@@ -36,20 +36,20 @@ def generate_launch_description():
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
     camera_arg = DeclareLaunchArgument('camera', default_value='false')
     lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
-    prefix_arg = DeclareLaunchArgument('prefix', default_value='')
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('kobuki_description'),
             'launch/'), 'kobuki_description.launch.py']),
-        launch_arguments={'prefix': LaunchConfiguration('prefix')}.items()
+        launch_arguments={'namespace': LaunchConfiguration('namespace')}.items()
     )
 
     gazebo_spawn_robot = Node(
         package="ros_gz_sim",
         executable="create",
         output="screen",
+        namespace = LaunchConfiguration('namespace'),
         arguments=[
             "-model",
             LaunchConfiguration('model_name'),
@@ -75,7 +75,6 @@ def generate_launch_description():
     ld.add_action(gazebo_arg)
     ld.add_action(camera_arg)
     ld.add_action(lidar_arg)
-    ld.add_action(prefix_arg)
     ld.add_action(use_sim_time_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)

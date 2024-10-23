@@ -3,7 +3,7 @@ project(kobuki_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY launch meshes rviz urdf config
+install(DIRECTORY launch meshes rviz urdf config worlds
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)

@@ -9,46 +9,46 @@
   <xacro:arg name="lidar" default="false" />
   <xacro:arg name="camera" default="false" />
   <xacro:arg name="structure" default="false" />
-  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="namespace" default="" />
   <xacro:arg name="gazebo" default="false" />
 
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki_base.urdf.xacro" />
   <xacro:include filename="$(find kobuki_description)/urdf/turtlebot_common_library.urdf.xacro" />
-  <xacro:kobuki_base/>
+  <xacro:kobuki_base namespace="$(arg namespace)"/>
 
   <xacro:if value="$(arg structure)">
     <xacro:include filename="$(find kobuki_description)/urdf/stacks/hexagons.urdf.xacro"/>
     <xacro:include filename="$(find kobuki_description)/urdf/stacks/circles.urdf.xacro"/>
-    <xacro:stack_hexagons parent="base_link"/>
-    <xacro:turtlebot_standoff_1in number="0" parent="base_link" x_loc="0.120" y_loc="0.082" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_1in number="1" parent="base_link" x_loc="0.055" y_loc="0.120" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_1in number="2" parent="base_link" x_loc="-0.055" y_loc="0.120" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_1in number="3" parent="base_link" x_loc="0.120" y_loc="-0.082" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_1in number="4" parent="base_link" x_loc="0.055" y_loc="-0.120" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_1in number="5" parent="base_link" x_loc="-0.055" y_loc="-0.120" z_loc="0.09"/>
-    <xacro:turtlebot_standoff_2in number="0" parent="base_link" x_loc="0.0381" y_loc="0.1505" z_loc="0.1340"/>
-    <xacro:turtlebot_standoff_2in number="1" parent="base_link" x_loc="0.0381" y_loc="-0.1505" z_loc="0.1340"/>
-    <xacro:turtlebot_standoff_2in number="2" parent="base_link" x_loc="-0.0381" y_loc="0.1505" z_loc="0.1340"/>
-    <xacro:turtlebot_standoff_2in number="3" parent="base_link" x_loc="-0.0381" y_loc="-0.1505" z_loc="0.1340"/>
-    <xacro:turtlebot_standoff_8in number="0" parent="base_link" x_loc="0.0381" y_loc="0.1505" z_loc="0.1900"/>
-    <xacro:turtlebot_standoff_8in number="1" parent="base_link" x_loc="0.0381" y_loc="-0.1505" z_loc="0.1900"/>
-    <xacro:turtlebot_standoff_8in number="2" parent="base_link" x_loc="-0.0381" y_loc="0.1505" z_loc="0.1900"/>
-    <xacro:turtlebot_standoff_8in number="3" parent="base_link" x_loc="-0.0381" y_loc="-0.1505" z_loc="0.1900"/>
+    <xacro:stack_hexagons parent="$(arg namespace)/base_link" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="0" parent="$(arg namespace)/base_link" x_loc="0.120" y_loc="0.082" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="1" parent="$(arg namespace)/base_link" x_loc="0.055" y_loc="0.120" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="2" parent="$(arg namespace)/base_link" x_loc="-0.055" y_loc="0.120" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="3" parent="$(arg namespace)/base_link" x_loc="0.120" y_loc="-0.082" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="4" parent="$(arg namespace)/base_link" x_loc="0.055" y_loc="-0.120" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_1in number="5" parent="$(arg namespace)/base_link" x_loc="-0.055" y_loc="-0.120" z_loc="0.09" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_2in number="0" parent="$(arg namespace)/base_link" x_loc="0.0381" y_loc="0.1505" z_loc="0.1340" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_2in number="1" parent="$(arg namespace)/base_link" x_loc="0.0381" y_loc="-0.1505" z_loc="0.1340" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_2in number="2" parent="$(arg namespace)/base_link" x_loc="-0.0381" y_loc="0.1505" z_loc="0.1340" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_2in number="3" parent="$(arg namespace)/base_link" x_loc="-0.0381" y_loc="-0.1505" z_loc="0.1340" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_8in number="0" parent="$(arg namespace)/base_link" x_loc="0.0381" y_loc="0.1505" z_loc="0.1900" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_8in number="1" parent="$(arg namespace)/base_link" x_loc="0.0381" y_loc="-0.1505" z_loc="0.1900" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_8in number="2" parent="$(arg namespace)/base_link" x_loc="-0.0381" y_loc="0.1505" z_loc="0.1900" namespace="$(arg namespace)"/>
+    <xacro:turtlebot_standoff_8in number="3" parent="$(arg namespace)/base_link" x_loc="-0.0381" y_loc="-0.1505" z_loc="0.1900" namespace="$(arg namespace)"/>
   </xacro:if>
 
   <xacro:if value="$(arg lidar)">
     <xacro:include filename="$(find kobuki_description)/urdf/sensors/lidar.urdf.xacro"/>
-    <xacro:sensor_lidar/>
+    <xacro:sensor_lidar namespace="$(arg namespace)"/>
   </xacro:if>
 
   <xacro:if value="$(arg camera)">
     <xacro:include filename="$(find kobuki_description)/urdf/sensors/asus_xtion_pro.urdf.xacro"/>
-    <xacro:sensor_asus_xtion_pro parent="base_link"/>
+    <xacro:sensor_asus_xtion_pro parent="$(arg namespace)/base_link"/>
   </xacro:if>
 
   <xacro:if value="$(arg gazebo)">
     <xacro:include filename="$(find kobuki_description)/urdf/kobuki_gazebo.urdf.xacro"/>
-    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)" prefix="$(arg prefix)"/>
+    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)" namespace="$(arg namespace)"/>
   </xacro:if>
   
 </robot>

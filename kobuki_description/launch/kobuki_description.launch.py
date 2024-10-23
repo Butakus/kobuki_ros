@@ -37,66 +37,32 @@ import os
 import yaml
 import tempfile
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
-def modify_yaml_with_prefix(original_yaml_path, prefix):
-    """
-    Modifica el archivo .yaml para añadir el prefijo a los nombres de los tópicos.
-    """
-    with open(original_yaml_path, 'r') as yaml_file:
-        yaml_data = yaml.safe_load(yaml_file)
 
-    # Verificar si yaml_data es una lista (esperado)
-    if not isinstance(yaml_data, list):
-        raise ValueError("El archivo YAML no tiene el formato correcto. Se esperaba una lista de diccionarios.")
-
-    # Iterar sobre cada remapeo de tópico y añadir el prefijo
-    for remap in yaml_data:
-        if isinstance(remap, dict):  # Asegurarse de que sea un diccionario
-            ros_topic_name = remap.get('ros_topic_name', '')
-            gz_topic_name = remap.get('gz_topic_name', '')
-
-            # Añadir el prefijo a los nombres de los tópicos
-            remap['ros_topic_name'] = f"{prefix}/{ros_topic_name}"
-            remap['gz_topic_name'] = f"/{prefix}{gz_topic_name}"
-        else:
-            print(f"Se omite un elemento no válido en el YAML: {remap}")
-
-    # Crear un archivo temporal para almacenar el nuevo .yaml
-    temp_yaml = tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')
-    temp_yaml_path = temp_yaml.name
-    yaml.dump(yaml_data, temp_yaml, default_flow_style=False)
-    temp_yaml.close()
-
-    return temp_yaml_path
 
 def start_bridge(context):
-    # Condición para ejecutar el bridge solo si 'gazebo' es 'true'
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
 
-        # Ruta original del archivo .yaml
-        original_yaml_path = os.path.join(
+       
+        yaml_path = os.path.join(
             kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
         )
 
-        # Obtener el prefijo del launch argument
-        prefix = LaunchConfiguration('prefix').perform(context)
-
-        # Modificar el archivo .yaml con el prefijo
-        modified_yaml_path = modify_yaml_with_prefix(original_yaml_path, prefix)
 
         bridge = Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
+            namespace=LaunchConfiguration('namespace'),
             name='bridge_ros_gz',
             parameters=[
                 {
-                    'config_file': modified_yaml_path,  # Usar el archivo modificado
+                    'config_file': yaml_path,  
                     'use_sim_time': True,
-                    'expand_gz_topic_names': True,  # Asegurarse que los nombres de tópicos se expandan correctamente
+                    'expand_gz_topic_names': True,  
                 }
             ],
             output='screen',
@@ -150,9 +116,6 @@ def generate_launch_description():
         'structure', default_value='true',
         description='Enable structure elements')
 
-    prefix_arg = DeclareLaunchArgument(
-        'prefix', default_value='',
-        description='Prefix to apply to the topics')
     
     gazebo_arg = DeclareLaunchArgument(
         'gazebo', default_value='false',
@@ -183,21 +146,24 @@ def generate_launch_description():
                     ' lidar:=', LaunchConfiguration('lidar'),
                     ' camera:=', LaunchConfiguration('camera'),
                     ' structure:=', LaunchConfiguration('structure'),
-                    ' prefix:=', LaunchConfiguration('prefix'),
+                    ' namespace:=', LaunchConfiguration('namespace'),
                     ' gazebo:=', LaunchConfiguration('gazebo')
                 ]), value_type=str),
             'use_sim_time': LaunchConfiguration('use_sim_time')
         }],
-    )
+    )   
 
     # TF Tree
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
         name='joint_state_publisher',
-        namespace=LaunchConfiguration('prefix'),
+        namespace=LaunchConfiguration('namespace'),
         parameters=[{
-            'use_sim_time': LaunchConfiguration('use_sim_time')
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            # 'source_list': ["/r1/joint_states"]
+            
+            
         }]
     )
 
@@ -205,7 +171,6 @@ def generate_launch_description():
     ld.add_action(lidar_arg)
     ld.add_action(camera_arg)
     ld.add_action(structure_arg)
-    ld.add_action(prefix_arg)
     ld.add_action(gazebo_arg)
     ld.add_action(description_file)
     ld.add_action(namespace_arg)
@@ -214,5 +179,6 @@ def generate_launch_description():
     ld.add_action(joint_state_publisher_node)
     ld.add_action(OpaqueFunction(function=start_bridge))
     ld.add_action(OpaqueFunction(function=start_camera))
+
 
     return ld
