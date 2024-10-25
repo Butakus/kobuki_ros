@@ -43,34 +43,62 @@ from launch_ros.actions import Node
 
 
 
+def modify_yaml_with_namespace(original_yaml_path, namespace):
+
+    with open(original_yaml_path, 'r') as yaml_file:
+        yaml_data = yaml.safe_load(yaml_file)
+
+    if not isinstance(yaml_data, list):
+        raise ValueError("The YAML file is not formatted correctly. A list of dictionaries was expected.")
+
+    for remap in yaml_data:
+        if isinstance(remap, dict):  
+            ros_topic_name = remap.get('ros_topic_name', '')
+            gz_topic_name = remap.get('gz_topic_name', '')
+            if not ros_topic_name.startswith('/'):
+                remap['ros_topic_name'] = f"{namespace}/{ros_topic_name}"
+                remap['gz_topic_name'] = f"/{namespace}{gz_topic_name}"
+        else:
+            print(f"An invalid element is being omitted in the YAML: {remap}")
+
+    temp_yaml = tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')
+    temp_yaml_path = temp_yaml.name
+    yaml.dump(yaml_data, temp_yaml, default_flow_style=False)
+    temp_yaml.close()
+    return temp_yaml_path
+
 def start_bridge(context):
+
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
 
-       
-        yaml_path = os.path.join(
+
+        original_yaml_path = os.path.join(
             kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
         )
 
+        prefix = LaunchConfiguration('namespace').perform(context)
 
+        modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, prefix)
         bridge = Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
-            namespace=LaunchConfiguration('namespace'),
             name='bridge_ros_gz',
             parameters=[
                 {
-                    'config_file': yaml_path,  
+                    'config_file': modified_yaml_path,  
                     'use_sim_time': True,
-                    'expand_gz_topic_names': True,  
+                    'expand_gz_topic_names': True, 
                 }
             ],
             output='screen',
         )
 
         return [bridge]
-    
+
     return []
+
+
 
 
 

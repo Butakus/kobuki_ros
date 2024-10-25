@@ -5,23 +5,23 @@
 
     <gazebo>
       <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
-        <left_joint>wheel_left_joint</left_joint>
-        <right_joint>wheel_right_joint</right_joint>
+        <left_joint>$(arg namespace)/wheel_left_joint</left_joint>
+        <right_joint>$(arg namespace)/wheel_right_joint</right_joint>
         <wheel_separation>0.223087</wheel_separation>
         <wheel_radius>0.035</wheel_radius>
         <max_linear_acceleration>1.0</max_linear_acceleration> 
         <topic>$(arg namespace)/cmd_vel</topic>
         <odom_topic>$(arg namespace)/odom</odom_topic>
         <frame_id>odom</frame_id>
-        <child_frame_id>base_footprint</child_frame_id>
+        <child_frame_id>$(arg namespace)/base_footprint</child_frame_id>
         <odom_publisher_frequency>30</odom_publisher_frequency>
         <tf_topic>/tf</tf_topic>
       </plugin>
 
       <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
         <topic>$(arg namespace)/joint_states</topic>
-        <joint>wheel_left_joint</joint>
-        <joint>wheel_right_joint</joint>
+        <joint>$(arg namespace)/wheel_left_joint</joint>
+        <joint>$(arg namespace)/wheel_right_joint</joint>
       </plugin> 
     </gazebo>
 

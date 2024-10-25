@@ -4,7 +4,7 @@
     - Stacks    : hexagons
     - 3d Sensor : kinect
 -->    
-<robot name="kobuki" xmlns:xacro="http://ros.org/wiki/xacro" >
+<robot name="kobuki_$(arg namespace)" xmlns:xacro="http://ros.org/wiki/xacro" >
 
   <xacro:arg name="lidar" default="false" />
   <xacro:arg name="camera" default="false" />
