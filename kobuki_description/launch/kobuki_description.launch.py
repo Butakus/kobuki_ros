@@ -133,7 +133,7 @@ def generate_launch_description():
     kobuki_pkg = get_package_share_directory('kobuki_description')
 
     lidar_arg = DeclareLaunchArgument(
-        'lidar', default_value='false',
+        'lidar', default_value='true',
         description='Enable lidar sensor')
     
     camera_arg = DeclareLaunchArgument(

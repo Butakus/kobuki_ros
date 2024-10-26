@@ -31,13 +31,13 @@
       name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
-      <gazebo reference="laser_link">
-        <sensor name="kobuki_lidar" type="gpu_lidar">
+      <gazebo reference="$(arg namespace)/laser_link">
+        <sensor name="$(arg namespace)/kobuki_lidar" type="gpu_lidar">
             <always_on>true</always_on>
             <visualize>true</visualize>
             <update_rate>5</update_rate>
             <topic>$(arg namespace)/scan_raw</topic>
-            <gz_frame_id>laser_link</gz_frame_id>
+            <gz_frame_id>$(arg namespace)/laser_link</gz_frame_id>
             <lidar>
               <scan>
                 <horizontal>

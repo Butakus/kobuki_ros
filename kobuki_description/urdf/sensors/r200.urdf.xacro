@@ -103,7 +103,7 @@
         <geometry>
           <box size="0.130 0.567 0.118"/>
         </geometry>
-      </collision>-->
+      </collision>
  
       <!-- This inertial field needs doesn't contain reliable data!! -->
      <inertial>
