@@ -43,7 +43,7 @@
 
   <xacro:if value="$(arg camera)">
     <xacro:include filename="$(find kobuki_description)/urdf/sensors/asus_xtion_pro.urdf.xacro"/>
-    <xacro:sensor_asus_xtion_pro parent="$(arg namespace)/base_link"/>
+    <xacro:sensor_asus_xtion_pro parent="$(arg namespace)/base_link" namespace="$(arg namespace)"/>
   </xacro:if>
 
   <xacro:if value="$(arg gazebo)">

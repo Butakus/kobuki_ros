@@ -77,13 +77,14 @@ def start_bridge(context):
             kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
         )
 
-        prefix = LaunchConfiguration('namespace').perform(context)
+        namespace = LaunchConfiguration('namespace').perform(context)
 
-        modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, prefix)
+        modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, namespace)
         bridge = Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='bridge_ros_gz',
+            #namespace=LaunchConfiguration('namespace'),
             parameters=[
                 {
                     'config_file': modified_yaml_path,  
@@ -104,25 +105,29 @@ def start_bridge(context):
 
 def start_camera(context):
     if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
+
+        namespace = LaunchConfiguration('namespace').perform(context)
         camera_bridge_image = Node(
             package='ros_gz_image',
             executable='image_bridge',
             name='bridge_gz_ros_camera_image',
             output='screen',
+            namespace=LaunchConfiguration('namespace'),
             parameters=[{
                 'use_sim_time': True,
             }],
-            arguments=['/rgbd_camera/image'])
+            arguments=[f"/{namespace}/rgbd_camera/image"])
 
         camera_bridge_depth = Node(
             package='ros_gz_image',
             executable='image_bridge',
             name='bridge_gz_ros_camera_depth',
             output='screen',
+            #namespace=LaunchConfiguration('namespace'),
             parameters=[{
                 'use_sim_time': True,
             }],
-            arguments=['/rgbd_camera/depth_image'])
+            arguments=[f"/{namespace}/rgbd_camera/depth_image"])
         
         return [camera_bridge_image, camera_bridge_depth]
    

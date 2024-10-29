@@ -34,7 +34,7 @@ def generate_launch_description():
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
     model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
-    camera_arg = DeclareLaunchArgument('camera', default_value='false')
+    camera_arg = DeclareLaunchArgument('camera', default_value='true')
     lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     
