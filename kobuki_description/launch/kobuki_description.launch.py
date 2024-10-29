@@ -56,7 +56,7 @@ def modify_yaml_with_namespace(original_yaml_path, namespace):
             ros_topic_name = remap.get('ros_topic_name', '')
             gz_topic_name = remap.get('gz_topic_name', '')
             if not ros_topic_name.startswith('/'):
-                remap['ros_topic_name'] = f"{namespace}/{ros_topic_name}"
+                remap['ros_topic_name'] = f"/{namespace}/{ros_topic_name}"
                 remap['gz_topic_name'] = f"/{namespace}{gz_topic_name}"
         else:
             print(f"An invalid element is being omitted in the YAML: {remap}")
