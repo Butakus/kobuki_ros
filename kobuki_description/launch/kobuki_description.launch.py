@@ -84,7 +84,7 @@ def start_bridge(context):
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='bridge_ros_gz',
-            #namespace=LaunchConfiguration('namespace'),
+            namespace=LaunchConfiguration('namespace'),
             parameters=[
                 {
                     'config_file': modified_yaml_path,  
@@ -123,7 +123,7 @@ def start_camera(context):
             executable='image_bridge',
             name='bridge_gz_ros_camera_depth',
             output='screen',
-            #namespace=LaunchConfiguration('namespace'),
+            namespace=LaunchConfiguration('namespace'),
             parameters=[{
                 'use_sim_time': True,
             }],
