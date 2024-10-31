@@ -16,8 +16,8 @@
 #include <vector>
 
 #include <geometry_msgs/msg/twist.hpp>
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.hpp>
+#include <message_filters/synchronizer.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rcl_interfaces/msg/parameter_event.hpp>
 #include <rclcpp/parameter_events_filter.hpp>
