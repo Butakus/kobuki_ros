@@ -47,7 +47,13 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('kobuki_description'),
             'launch/'), 'kobuki_description.launch.py']),
-        launch_arguments={'namespace': LaunchConfiguration('namespace')}.items()
+        launch_arguments={
+            'namespace': LaunchConfiguration('namespace'),
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'gazebo': LaunchConfiguration('gazebo'),
+            'camera': LaunchConfiguration('camera'),
+            'lidar': LaunchConfiguration('lidar'),
+        }.items()
     )
 
     gazebo_spawn_robot = Node(
