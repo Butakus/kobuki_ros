@@ -27,26 +27,20 @@ from launch.substitutions import LaunchConfiguration
 
 
 def modify_yaml_with_namespace(original_yaml_path, namespace):
-
-    with open(original_yaml_path, 'r') as yaml_file:
-        yaml_data = yaml.safe_load(yaml_file)
-
-    if not isinstance(yaml_data, list):
-        raise ValueError("The YAML file is not formatted correctly. A list of dictionaries was expected.")
-
-    for remap in yaml_data:
-        if isinstance(remap, dict):  
-            ros_topic_name = remap.get('ros_topic_name', '')
-            gz_topic_name = remap.get('gz_topic_name', '')
-            if not ros_topic_name.startswith('/'):
-                remap['ros_topic_name'] = f"/{namespace}/{ros_topic_name}"
-                remap['gz_topic_name'] = f"/{namespace}{gz_topic_name}"
-        else:
-            print(f"An invalid element is being omitted in the YAML: {remap}")
-
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_yaml:
-        temp_yaml_path = temp_yaml.name
-        yaml.dump(yaml_data, temp_yaml, default_flow_style=False)
+    """ Replace all instances of <robot_namespace> in the yaml file
+        with the corresponding namespace value.
+        This creates a temp file with the result and returns its path.
+    """
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_output_yaml:
+        temp_yaml_path = temp_output_yaml.name
+        with open(original_yaml_path, 'r') as yaml_file:
+            key = '<robot_namespace>'
+            namespace_prefix = f'/{namespace}' if namespace != '' else ''
+            for line in yaml_file:
+                if key in line:
+                    line = line.replace(key, namespace_prefix)
+                temp_output_yaml.write(line)
+            yaml_data = yaml.safe_load(yaml_file)
     return temp_yaml_path
 
 def start_bridge(context):
