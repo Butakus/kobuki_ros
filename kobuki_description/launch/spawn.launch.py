@@ -32,12 +32,17 @@ def generate_launch_description():
     declare_roll_cmd = DeclareLaunchArgument('R', default_value='0.0')
     declare_pitch_cmd = DeclareLaunchArgument('P', default_value='0.0')
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
-    model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
+    name_arg = DeclareLaunchArgument('name', default_value='kobuki')
     gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
     camera_arg = DeclareLaunchArgument('camera', default_value='true')
     lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
-    
+    namespace_arg = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace to apply to the nodes'
+    )
+
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('kobuki_description'),
@@ -51,8 +56,8 @@ def generate_launch_description():
         output="screen",
         namespace = LaunchConfiguration('namespace'),
         arguments=[
-            "-model",
-            LaunchConfiguration('model_name'),
+            "-name",
+            LaunchConfiguration('name'),
             "-topic",
             "robot_description",
             "-x", LaunchConfiguration('x'),
@@ -71,14 +76,13 @@ def generate_launch_description():
     ld.add_action(declare_roll_cmd)
     ld.add_action(declare_pitch_cmd)
     ld.add_action(declare_yaw_cmd)
-    ld.add_action(model_name)
+    ld.add_action(name_arg)
     ld.add_action(gazebo_arg)
     ld.add_action(camera_arg)
     ld.add_action(lidar_arg)
     ld.add_action(use_sim_time_arg)
+    ld.add_action(namespace_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
-
-
 
     return ld
