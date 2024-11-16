@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+import yaml
+import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -20,66 +22,37 @@ from launch_ros.actions import Node
 import launch_ros.descriptions
 from launch.substitutions import Command
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration
-
-
-import os
-import yaml
-import tempfile
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch import LaunchDescription
-
-import os
-import yaml
-import tempfile
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo
-from launch.substitutions import LaunchConfiguration, PythonExpression
-from launch_ros.actions import Node
-
 
 
 def modify_yaml_with_namespace(original_yaml_path, namespace):
-
-    with open(original_yaml_path, 'r') as yaml_file:
-        yaml_data = yaml.safe_load(yaml_file)
-
-    if not isinstance(yaml_data, list):
-        raise ValueError("The YAML file is not formatted correctly. A list of dictionaries was expected.")
-
-    for remap in yaml_data:
-        if isinstance(remap, dict):  
-            ros_topic_name = remap.get('ros_topic_name', '')
-            gz_topic_name = remap.get('gz_topic_name', '')
-            if not ros_topic_name.startswith('/'):
-                remap['ros_topic_name'] = f"/{namespace}/{ros_topic_name}"
-                remap['gz_topic_name'] = f"/{namespace}{gz_topic_name}"
-        else:
-            print(f"An invalid element is being omitted in the YAML: {remap}")
-
-    temp_yaml = tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')
-    temp_yaml_path = temp_yaml.name
-    yaml.dump(yaml_data, temp_yaml, default_flow_style=False)
-    temp_yaml.close()
+    """ Replace all instances of <robot_namespace> in the yaml file
+        with the corresponding namespace value.
+        This creates a temp file with the result and returns its path.
+    """
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_output_yaml:
+        temp_yaml_path = temp_output_yaml.name
+        with open(original_yaml_path, 'r') as yaml_file:
+            key = '<robot_namespace>'
+            namespace_prefix = f'/{namespace}' if namespace != '' else ''
+            for line in yaml_file:
+                if key in line:
+                    line = line.replace(key, namespace_prefix)
+                temp_output_yaml.write(line)
+            yaml_data = yaml.safe_load(yaml_file)
     return temp_yaml_path
 
 def start_bridge(context):
-
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
-
+        namespace = LaunchConfiguration('namespace').perform(context)
 
         original_yaml_path = os.path.join(
             kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
         )
-
-        namespace = LaunchConfiguration('namespace').perform(context)
-
         modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, namespace)
+
         bridge = Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
@@ -88,7 +61,7 @@ def start_bridge(context):
             parameters=[
                 {
                     'config_file': modified_yaml_path,  
-                    'use_sim_time': True,
+                    'use_sim_time': LaunchConfiguration('use_sim_time'),
                     'expand_gz_topic_names': True, 
                 }
             ],
@@ -100,13 +73,15 @@ def start_bridge(context):
     return []
 
 
-
-
-
 def start_camera(context):
     if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
 
         namespace = LaunchConfiguration('namespace').perform(context)
+
+        # Bridge topics must be passed with manual namespaces
+        namespace_prefix = f'/{namespace}' if namespace != '' else ''
+        image_topic = f'{namespace_prefix}/rgbd_camera/image'
+        depth_topic = f'{namespace_prefix}/rgbd_camera/depth_image'
         camera_bridge_image = Node(
             package='ros_gz_image',
             executable='image_bridge',
@@ -114,9 +89,9 @@ def start_camera(context):
             output='screen',
             namespace=LaunchConfiguration('namespace'),
             parameters=[{
-                'use_sim_time': True,
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
             }],
-            arguments=[f"/{namespace}/rgbd_camera/image"])
+            arguments=[image_topic])
 
         camera_bridge_depth = Node(
             package='ros_gz_image',
@@ -125,9 +100,9 @@ def start_camera(context):
             output='screen',
             namespace=LaunchConfiguration('namespace'),
             parameters=[{
-                'use_sim_time': True,
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
             }],
-            arguments=[f"/{namespace}/rgbd_camera/depth_image"])
+            arguments=[depth_topic])
         
         return [camera_bridge_image, camera_bridge_depth]
    
@@ -138,9 +113,9 @@ def generate_launch_description():
     kobuki_pkg = get_package_share_directory('kobuki_description')
 
     lidar_arg = DeclareLaunchArgument(
-        'lidar', default_value='true',
+        'lidar', default_value='false',
         description='Enable lidar sensor')
-    
+
     camera_arg = DeclareLaunchArgument(
         'camera', default_value='false',
         description='Enable camera sensor')
@@ -149,7 +124,6 @@ def generate_launch_description():
         'structure', default_value='true',
         description='Enable structure elements')
 
-    
     gazebo_arg = DeclareLaunchArgument(
         'gazebo', default_value='false',
         description='Enable gazebo plugins')
@@ -167,7 +141,6 @@ def generate_launch_description():
         description='Namespace to apply to the nodes'
     )
 
-
     robot_model = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -184,7 +157,7 @@ def generate_launch_description():
                 ]), value_type=str),
             'use_sim_time': LaunchConfiguration('use_sim_time')
         }],
-    )   
+    )
 
     # TF Tree
     joint_state_publisher_node = Node(
@@ -193,10 +166,7 @@ def generate_launch_description():
         name='joint_state_publisher',
         namespace=LaunchConfiguration('namespace'),
         parameters=[{
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            # 'source_list': ["/r1/joint_states"]
-            
-            
+            'use_sim_time': LaunchConfiguration('use_sim_time')
         }]
     )
 
@@ -212,6 +182,5 @@ def generate_launch_description():
     ld.add_action(joint_state_publisher_node)
     ld.add_action(OpaqueFunction(function=start_bridge))
     ld.add_action(OpaqueFunction(function=start_camera))
-
 
     return ld
