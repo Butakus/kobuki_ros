@@ -56,7 +56,7 @@
       </plugin>
 
       <!-- World statistics -->
-      <!-- <plugin filename="WorldStats" name="World stats">
+      <plugin filename="WorldStats" name="World stats">
         <ignition-gui>
           <title>World stats</title>
           <property type="bool" key="showTitleBar">false</property>
@@ -76,7 +76,7 @@
         <real_time>true</real_time>
         <real_time_factor>true</real_time_factor>
         <iterations>true</iterations>
-      </plugin> -->
+      </plugin>
 
       <plugin filename="TransformControl" name="Transform control">
           <ignition-gui>
