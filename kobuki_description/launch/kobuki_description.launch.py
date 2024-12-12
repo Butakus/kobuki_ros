@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+import yaml
+import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -20,53 +22,87 @@ from launch_ros.actions import Node
 import launch_ros.descriptions
 from launch.substitutions import Command
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 
+
+def modify_yaml_with_namespace(original_yaml_path, namespace):
+    """ Replace all instances of <robot_namespace> in the yaml file
+        with the corresponding namespace value.
+        This creates a temp file with the result and returns its path.
+    """
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_output_yaml:
+        temp_yaml_path = temp_output_yaml.name
+        with open(original_yaml_path, 'r') as yaml_file:
+            key = '<robot_namespace>'
+            namespace_prefix = f'/{namespace}' if namespace != '' else ''
+            for line in yaml_file:
+                if key in line:
+                    line = line.replace(key, namespace_prefix)
+                temp_output_yaml.write(line)
+            yaml_data = yaml.safe_load(yaml_file)
+    return temp_yaml_path
 
 def start_bridge(context):
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
+        namespace = LaunchConfiguration('namespace').perform(context)
+
+        original_yaml_path = os.path.join(
+            kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
+        )
+        modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, namespace)
 
         bridge = Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             name='bridge_ros_gz',
+            namespace=LaunchConfiguration('namespace'),
             parameters=[
                 {
-                    'config_file': os.path.join(
-                        kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
-                    ),
-                    'use_sim_time': True,
+                    'config_file': modified_yaml_path,  
+                    'use_sim_time': LaunchConfiguration('use_sim_time'),
+                    'expand_gz_topic_names': True, 
                 }
             ],
             output='screen',
         )
 
         return [bridge]
-    
+
     return []
+
 
 def start_camera(context):
     if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
+
+        namespace = LaunchConfiguration('namespace').perform(context)
+
+        # Bridge topics must be passed with manual namespaces
+        namespace_prefix = f'/{namespace}' if namespace != '' else ''
+        image_topic = f'{namespace_prefix}/rgbd_camera/image'
+        depth_topic = f'{namespace_prefix}/rgbd_camera/depth_image'
         camera_bridge_image = Node(
             package='ros_gz_image',
             executable='image_bridge',
             name='bridge_gz_ros_camera_image',
             output='screen',
+            namespace=LaunchConfiguration('namespace'),
             parameters=[{
-                'use_sim_time': True,
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
             }],
-            arguments=['/rgbd_camera/image'])
+            arguments=[image_topic])
 
         camera_bridge_depth = Node(
             package='ros_gz_image',
             executable='image_bridge',
             name='bridge_gz_ros_camera_depth',
             output='screen',
+            namespace=LaunchConfiguration('namespace'),
             parameters=[{
-                'use_sim_time': True,
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
             }],
-            arguments=['/rgbd_camera/depth_image'])
+            arguments=[depth_topic])
         
         return [camera_bridge_image, camera_bridge_depth]
    
@@ -79,7 +115,7 @@ def generate_launch_description():
     lidar_arg = DeclareLaunchArgument(
         'lidar', default_value='false',
         description='Enable lidar sensor')
-    
+
     camera_arg = DeclareLaunchArgument(
         'camera', default_value='false',
         description='Enable camera sensor')
@@ -87,7 +123,7 @@ def generate_launch_description():
     structure_arg = DeclareLaunchArgument(
         'structure', default_value='true',
         description='Enable structure elements')
-    
+
     gazebo_arg = DeclareLaunchArgument(
         'gazebo', default_value='false',
         description='Enable gazebo plugins')
@@ -101,8 +137,7 @@ def generate_launch_description():
     use_sim_time = DeclareLaunchArgument('use_sim_time', default_value='false')
 
     namespace_arg = DeclareLaunchArgument(
-        'namespace',
-        default_value='',
+        'namespace', default_value='',
         description='Namespace to apply to the nodes'
     )
 
@@ -117,6 +152,7 @@ def generate_launch_description():
                     ' lidar:=', LaunchConfiguration('lidar'),
                     ' camera:=', LaunchConfiguration('camera'),
                     ' structure:=', LaunchConfiguration('structure'),
+                    ' namespace:=', LaunchConfiguration('namespace'),
                     ' gazebo:=', LaunchConfiguration('gazebo')
                 ]), value_type=str),
             'use_sim_time': LaunchConfiguration('use_sim_time')
