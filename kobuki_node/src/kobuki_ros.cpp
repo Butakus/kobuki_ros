@@ -58,7 +58,7 @@
 #include <std_msgs/msg/empty.hpp>
 #include <std_msgs/msg/int16_multi_array.hpp>
 #include <std_msgs/msg/string.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <ecl/errors.hpp>
