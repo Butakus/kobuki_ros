@@ -2,13 +2,13 @@
 <robot name="turtlebot_hardware" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:macro name="turtlebot_spacer" params="parent number x_loc y_loc z_loc namespace">
-    <joint name="$(arg namespace)/spacer_${number}_joint" type="fixed">
+    <joint name="$(arg namespace)spacer_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/spacer_${number}_link" />
+      <child link="$(arg namespace)spacer_${number}_link" />
     </joint>
 
-    <link name="$(arg namespace)/spacer_${number}_link">
+    <link name="$(arg namespace)spacer_${number}_link">
       <inertial>
         <mass value="0.001" />
         <origin xyz="0 0 0" />
@@ -34,13 +34,13 @@
   </xacro:macro>
 
   <xacro:macro name="turtlebot_standoff_1in" params="parent number x_loc y_loc z_loc namespace">
-    <joint name="$(arg namespace)/standoff_1in_${number}_joint" type="fixed">
+    <joint name="$(arg namespace)standoff_1in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/standoff_1in_${number}_link" />
+      <child link="$(arg namespace)standoff_1in_${number}_link" />
     </joint>
 
-    <link name="$(arg namespace)/standoff_1in_${number}_link">
+    <link name="$(arg namespace)standoff_1in_${number}_link">
       <inertial>
         <mass value="0.001" />
         <origin xyz="0 0 0" />
@@ -66,13 +66,13 @@
   </xacro:macro>
 
   <xacro:macro name="turtlebot_standoff_2in" params="parent number x_loc y_loc z_loc namespace">
-    <joint name="$(arg namespace)/standoff_2in_${number}_joint" type="fixed">
+    <joint name="$(arg namespace)standoff_2in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/standoff_2in_${number}_link" />
+      <child link="$(arg namespace)standoff_2in_${number}_link" />
     </joint>
 
-    <link name="$(arg namespace)/standoff_2in_${number}_link">
+    <link name="$(arg namespace)standoff_2in_${number}_link">
       <inertial>
         <mass value="0.001" />
         <origin xyz="0 0 0" />
@@ -99,13 +99,13 @@
 
 
   <xacro:macro name="turtlebot_standoff_8in" params="parent number x_loc y_loc z_loc namespace">
-    <joint name="$(arg namespace)/standoff_8in_${number}_joint" type="fixed">
+    <joint name="$(arg namespace)standoff_8in_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/standoff_8in_${number}_link" />
+      <child link="$(arg namespace)standoff_8in_${number}_link" />
     </joint>
 
-    <link name="$(arg namespace)/standoff_8in_${number}_link">
+    <link name="$(arg namespace)standoff_8in_${number}_link">
       <inertial>
         <mass value="0.001" />
         <origin xyz="0 0 0" />
@@ -131,13 +131,13 @@
   </xacro:macro>
 
   <xacro:macro name="turtlebot_standoff_kinect" params="parent number x_loc y_loc z_loc namespace">
-    <joint name="$(arg namespace)/standoff_kinect_${number}_joint" type="fixed">
+    <joint name="$(arg namespace)standoff_kinect_${number}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} ${z_loc}" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/standoff_kinect_${number}_link" />
+      <child link="$(arg namespace)standoff_kinect_${number}_link" />
     </joint>
 
-    <link name="$(arg namespace)/standoff_kinect_${number}_link">
+    <link name="$(arg namespace)standoff_kinect_${number}_link">
       <inertial>
         <mass value="0.001" />
         <origin xyz="0 0 0" />
@@ -168,14 +168,14 @@
     <turtlebot_spacer parent="${parent}" number="2" x_loc="-0.07239" y_loc="-0.1114679" z_loc="0.062992"/>
     <turtlebot_spacer parent="${parent}" number="3" x_loc="-0.07239" y_loc="0.1114679" z_loc="0.062992"/>
 
-    <joint name="$(arg namespace)/plate_0_joint" type="fixed">
+    <joint name="$(arg namespace)plate_0_joint" type="fixed">
       <origin xyz="-0.04334 0  0.06775704" rpy="0 0 0" />
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/plate_0_link" />
+      <child link="$(arg namespace)plate_0_link" />
     </joint>
 
 
-    <link name="$(arg namespace)/plate_0_link">
+    <link name="$(arg namespace)plate_0_link">
       <inertial>
         <mass value="0.01" />
         <origin xyz="0 0 0" />
@@ -204,13 +204,13 @@
     <turtlebot_standoff_2in parent="${parent}" number="2" x_loc="-0.052832" y_loc="-0.1314196" z_loc="0.0709803"/>
     <turtlebot_standoff_2in parent="${parent}" number="3" x_loc="-0.052832" y_loc="0.1314196" z_loc="0.0709803"/>
 
-    <joint name="$(arg namespace)/plate_1_joint" type="fixed">
+    <joint name="$(arg namespace)plate_1_joint" type="fixed">
       <origin xyz="0.04068 0 0.05715" rpy="0 0 0" />
-      <parent link="$(arg namespace)/plate_0_link"/>
-      <child link="$(arg namespace)/plate_1_link" />
+      <parent link="$(arg namespace)plate_0_link"/>
+      <child link="$(arg namespace)plate_1_link" />
     </joint>
 
-    <link name="$(arg namespace)/plate_1_link">
+    <link name="$(arg namespace)plate_1_link">
       <inertial>
         <mass value="0.1" />
         <origin xyz="0 0 0" />
