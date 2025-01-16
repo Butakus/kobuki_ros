@@ -18,7 +18,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -26,31 +26,57 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
 
+    # Initial robot pose
     declare_x_cmd = DeclareLaunchArgument('x', default_value='0.0')
     declare_y_cmd = DeclareLaunchArgument('y', default_value='0.0')
     declare_z_cmd = DeclareLaunchArgument('z', default_value='0.0')
     declare_roll_cmd = DeclareLaunchArgument('R', default_value='0.0')
     declare_pitch_cmd = DeclareLaunchArgument('P', default_value='0.0')
     declare_yaw_cmd = DeclareLaunchArgument('Y', default_value='0.0')
-    model_name = DeclareLaunchArgument('model_name', default_value='kobuki')
-    gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
-    camera_arg = DeclareLaunchArgument('camera', default_value='true')
-    lidar_arg = DeclareLaunchArgument('lidar', default_value='true')
+    lidar_arg = DeclareLaunchArgument(
+        'lidar',
+        default_value='true',
+        description='Enable lidar sensor'
+    )
+
+    camera_arg = DeclareLaunchArgument(
+        'camera',
+        default_value='true',
+        description='Enable camera sensor'
+    )
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
-    
+    name_arg = DeclareLaunchArgument(
+        'name',
+        default_value='kobuki',
+        description='Model name used in gazebo',
+    )
+    namespace_arg = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace to apply to the nodes, topics and TF frames'
+    )
+
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('kobuki_description'),
             'launch/'), 'kobuki_description.launch.py']),
+        launch_arguments={
+            'namespace': LaunchConfiguration('namespace'),
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'gazebo': 'true',
+            'camera': LaunchConfiguration('camera'),
+            'lidar': LaunchConfiguration('lidar'),
+        }.items()
     )
 
     gazebo_spawn_robot = Node(
         package="ros_gz_sim",
         executable="create",
         output="screen",
+        namespace = LaunchConfiguration('namespace'),
         arguments=[
-            "-model",
-            LaunchConfiguration('model_name'),
+            "-name",
+            LaunchConfiguration('name'),
             "-topic",
             "robot_description",
             "-x", LaunchConfiguration('x'),
@@ -61,7 +87,7 @@ def generate_launch_description():
             "-Y", LaunchConfiguration('Y'),
         ],
     )
-
+    
     ld = LaunchDescription()
     ld.add_action(declare_x_cmd)
     ld.add_action(declare_y_cmd)
@@ -69,13 +95,12 @@ def generate_launch_description():
     ld.add_action(declare_roll_cmd)
     ld.add_action(declare_pitch_cmd)
     ld.add_action(declare_yaw_cmd)
-    ld.add_action(model_name)
-    ld.add_action(gazebo_arg)
     ld.add_action(camera_arg)
     ld.add_action(lidar_arg)
     ld.add_action(use_sim_time_arg)
+    ld.add_action(name_arg)
+    ld.add_action(namespace_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
-
 
     return ld
