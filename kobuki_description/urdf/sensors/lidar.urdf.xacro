@@ -3,7 +3,7 @@
 
   <xacro:macro name="sensor_lidar" params = "namespace">
   
-  <link name="$(arg namespace)/laser_link">
+  <link name="$(arg namespace)laser_link">
       <visual>
           <geometry>
             <mesh filename="file://$(find kobuki_description)/meshes/sensors/rplidar.dae" scale="0.001 0.001 0.001" /> 
@@ -19,10 +19,10 @@
         </inertial>
       </link>
 
-      <joint name="$(arg namespace)/laser_joint" type="fixed">
+      <joint name="$(arg namespace)laser_joint" type="fixed">
         <origin xyz="0.0 0.0 0.37" rpy="0 0 3.14" />
-        <parent link="$(arg namespace)/base_link"/>
-        <child link="$(arg namespace)/laser_link" />
+        <parent link="$(arg namespace)base_link"/>
+        <child link="$(arg namespace)laser_link" />
     </joint>
 
   </xacro:macro>

@@ -10,28 +10,28 @@
   <xacro:property name="astra_dae_display_scale"   value="1" />
   <!-- Parameterised in part by the values in turtlebot_properties.urdf.xacro -->
   <xacro:macro name="sensor_astra" params="parent namespace">
-    <joint name="$(arg namespace)/camera_rgb_joint" type="fixed">
+    <joint name="$(arg namespace)camera_rgb_joint" type="fixed">
       <origin xyz="${cam_px} ${astra_cam_py} ${cam_pz}"
               rpy="0 0 0"/>
       <parent link="${parent}"/>
-      <child link="$(arg namespace)/camera_rgb_frame" />
+      <child link="$(arg namespace)camera_rgb_frame" />
     </joint>
-    <link name="$(arg namespace)/camera_rgb_frame"/>
+    <link name="$(arg namespace)camera_rgb_frame"/>
 
-    <joint name="$(arg namespace)/camera_rgb_optical_joint" type="fixed">
+    <joint name="$(arg namespace)camera_rgb_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
-      <parent link="$(arg namespace)/camera_rgb_frame" />
-      <child link="$(arg namespace)/camera_rgb_optical_frame" />
+      <parent link="$(arg namespace)camera_rgb_frame" />
+      <child link="$(arg namespace)camera_rgb_optical_frame" />
     </joint>
-    <link name="$(arg namespace)/camera_rgb_optical_frame"/>
+    <link name="$(arg namespace)camera_rgb_optical_frame"/>
 
-    <joint name="$(arg namespace)/camera_joint" type="fixed">
+    <joint name="$(arg namespace)camera_joint" type="fixed">
       <origin xyz="0 ${astra_cam_rel_rgb_py} 0"
               rpy="0 0 0"/>
-      <parent link="$(arg namespace)/camera_rgb_frame"/>
-      <child link="$(arg namespace)/camera_link"/>
+      <parent link="$(arg namespace)camera_rgb_frame"/>
+      <child link="$(arg namespace)camera_link"/>
     </joint>
-    <link name="$(arg namespace)/camera_link">
+    <link name="$(arg namespace)camera_link">
       <visual>
         <origin xyz="-0.04 0.02 -0.01" rpy="${M_PI/2} 0 ${M_PI/2}"/>
         <geometry>
@@ -53,19 +53,19 @@
       </inertial>
     </link>
 
-    <joint name="$(arg namespace)/camera_depth_joint" type="fixed">
+    <joint name="$(arg namespace)camera_depth_joint" type="fixed">
       <origin xyz="0 ${astra_depth_rel_rgb_py} 0" rpy="0 0 0" />
-      <parent link="$(arg namespace)/camera_rgb_frame" />
-      <child link="$(arg namespace)/camera_depth_frame" />
+      <parent link="$(arg namespace)camera_rgb_frame" />
+      <child link="$(arg namespace)camera_depth_frame" />
     </joint>
-    <link name="$(arg namespace)/camera_depth_frame"/>
+    <link name="$(arg namespace)camera_depth_frame"/>
 
-    <joint name="$(arg namespace)/camera_depth_optical_joint" type="fixed">
+    <joint name="$(arg namespace)camera_depth_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
-      <parent link="$(arg namespace)/camera_depth_frame" />
-      <child link="$(arg namespace)/camera_depth_optical_frame" />
+      <parent link="$(arg namespace)camera_depth_frame" />
+      <child link="$(arg namespace)camera_depth_optical_frame" />
     </joint>
-    <link name="$(arg namespace)/camera_depth_optical_frame"/>
+    <link name="$(arg namespace)camera_depth_optical_frame"/>
 
     <!-- RGBD sensor for simulation, same as Kinect -->
     <turtlebot_sim_3dsensor/>
