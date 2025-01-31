@@ -87,7 +87,7 @@
               <p1>0.00000001</p1>
               <p2>0.00000001</p2>
             </distortion>
-            <optical_frame_id>camera_rgb_optical_link</optical_frame_id>
+            <optical_frame_id>camera_rgb_optical_frame</optical_frame_id>
           </camera>
         </sensor>
       </gazebo>
