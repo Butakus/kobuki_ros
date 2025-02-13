@@ -18,15 +18,21 @@ import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node
+from launch_ros.actions import Node, SetRemap, SetParameter, PushROSNamespace
 from launch_ros.descriptions import ParameterValue
-from launch.substitutions import Command
+from launch.substitutions import (
+    AndSubstitution,
+    AnySubstitution,
+    Command,
+    IfElseSubstitution,
+    NotSubstitution
+)
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, GroupAction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, EqualsSubstitution
 
 
-def modify_yaml_with_namespace(original_yaml_path, namespace):
+def modify_yaml_with_namespace(original_yaml_path, namespace, tf_namespace):
     """ Replace all instances of <robot_namespace> in the yaml file
         with the corresponding namespace value.
         This creates a temp file with the result and returns its path.
@@ -34,11 +40,15 @@ def modify_yaml_with_namespace(original_yaml_path, namespace):
     with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_output_yaml:
         temp_yaml_path = temp_output_yaml.name
         with open(original_yaml_path, 'r') as yaml_file:
-            key = '<robot_namespace>'
+            key_ns = '<robot_namespace>'
+            key_tf = '<tf_namespace>'
             namespace_prefix = f'/{namespace}' if namespace != '' else ''
+            tf_prefix = f'/{tf_namespace}' if tf_namespace != '' else ''
             for line in yaml_file:
-                if key in line:
-                    line = line.replace(key, namespace_prefix)
+                if key_ns in line:
+                    line = line.replace(key_ns, namespace_prefix)
+                if key_tf in line:
+                    line = line.replace(key_tf, tf_prefix)
                 temp_output_yaml.write(line)
             yaml_data = yaml.safe_load(yaml_file)
     return temp_yaml_path
@@ -46,28 +56,41 @@ def modify_yaml_with_namespace(original_yaml_path, namespace):
 def start_bridge(context):
     if LaunchConfiguration('gazebo').perform(context) == 'true':
         kobuki_pkg = get_package_share_directory('kobuki_description')
-        namespace = LaunchConfiguration('namespace').perform(context)
 
+        do_tf_remapping = LaunchConfiguration('do_tf_remapping')
+
+        namespace = LaunchConfiguration('namespace').perform(context)
+        tf_namespace = ''
+        if namespace != '' and do_tf_remapping.perform(context) == 'true':
+            tf_namespace = namespace
         original_yaml_path = os.path.join(
             kobuki_pkg, 'config/bridge', 'kobuki_bridge.yaml'
         )
-        modified_yaml_path = modify_yaml_with_namespace(original_yaml_path, namespace)
-
-        bridge = Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='bridge_ros_gz',
-            namespace=LaunchConfiguration('namespace'),
-            parameters=[
-                {
-                    'config_file': modified_yaml_path,  
-                    'use_sim_time': LaunchConfiguration('use_sim_time'),
-                    'expand_gz_topic_names': True, 
-                }
-            ],
-            output='screen',
+        modified_yaml_path = modify_yaml_with_namespace(
+            original_yaml_path,
+            namespace,
+            tf_namespace
         )
 
+        bridge = GroupAction([
+            SetParameter('use_sim_time', LaunchConfiguration('use_sim_time')),
+            PushROSNamespace(namespace=LaunchConfiguration('namespace')),
+            SetRemap(condition=IfCondition(do_tf_remapping), src='/tf', dst='tf'),
+            SetRemap(condition=IfCondition(do_tf_remapping), src='/tf_static', dst='tf_static'),
+            Node(
+                package='ros_gz_bridge',
+                executable='parameter_bridge',
+                name='bridge_ros_gz',
+                parameters=[
+                    {
+                        'use_sim_time': LaunchConfiguration('use_sim_time'),
+                        'config_file': modified_yaml_path,
+                        'expand_gz_topic_names': True,
+                    }
+                ],
+                output='screen',
+            )
+        ])
         return [bridge]
 
     return []
@@ -76,36 +99,42 @@ def start_bridge(context):
 def start_camera(context):
     if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
 
+        do_tf_remapping = LaunchConfiguration('do_tf_remapping')
         namespace = LaunchConfiguration('namespace').perform(context)
 
         # Bridge topics must be passed with manual namespaces
         namespace_prefix = f'/{namespace}' if namespace != '' else ''
         image_topic = f'{namespace_prefix}/rgbd_camera/image'
         depth_topic = f'{namespace_prefix}/rgbd_camera/depth_image'
-        camera_bridge_image = Node(
-            package='ros_gz_image',
-            executable='image_bridge',
-            name='bridge_gz_ros_camera_image',
-            output='screen',
-            namespace=LaunchConfiguration('namespace'),
-            parameters=[{
-                'use_sim_time': LaunchConfiguration('use_sim_time'),
-            }],
-            arguments=[image_topic])
+        camera_nodes = GroupAction([
+            SetParameter('use_sim_time', LaunchConfiguration('use_sim_time')),
+            PushROSNamespace(namespace=LaunchConfiguration('namespace')),
+            SetRemap(condition=IfCondition(do_tf_remapping), src='/tf', dst='tf'),
+            SetRemap(condition=IfCondition(do_tf_remapping), src='/tf_static', dst='tf_static'),
+            Node(
+                package='ros_gz_image',
+                executable='image_bridge',
+                name='bridge_gz_ros_camera_image',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': LaunchConfiguration('use_sim_time'),
+                }],
+                arguments=[image_topic]
+            ),
+            Node(
+                package='ros_gz_image',
+                executable='image_bridge',
+                name='bridge_gz_ros_camera_depth',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': LaunchConfiguration('use_sim_time'),
+                }],
+                arguments=[depth_topic]
+            )
+        ])
 
-        camera_bridge_depth = Node(
-            package='ros_gz_image',
-            executable='image_bridge',
-            name='bridge_gz_ros_camera_depth',
-            output='screen',
-            namespace=LaunchConfiguration('namespace'),
-            parameters=[{
-                'use_sim_time': LaunchConfiguration('use_sim_time'),
-            }],
-            arguments=[depth_topic])
-        
-        return [camera_bridge_image, camera_bridge_depth]
-   
+        return [camera_nodes]
+
     return []
 
 def generate_launch_description():
@@ -141,11 +170,25 @@ def generate_launch_description():
         description='Namespace to apply to the nodes'
     )
 
+    declare_do_tf_remapping_arg = DeclareLaunchArgument(
+        'do_tf_remapping',
+        default_value='False',
+        description='Whether to remap the tf topic to independent namespaces (/tf -> tf)',
+    )
+
     # Check if the namespace is set and generate the corresponding URDF.
     # If a namespace is used, a trailing '/' is added.
     # Otherwise the node is launched without namespace
     is_empty_namespace = EqualsSubstitution(LaunchConfiguration('namespace'), '')
+    do_tf_remapping = LaunchConfiguration('do_tf_remapping')
+    tf_namespace = IfElseSubstitution(
+        AndSubstitution(AnySubstitution(do_tf_remapping), NotSubstitution(is_empty_namespace)),
+        LaunchConfiguration('namespace'),  # Value if true
+        ''                                 # Value if false
+    )
     robot_model = GroupAction([
+        SetRemap(condition=IfCondition(do_tf_remapping), src='/tf', dst='tf'),
+        SetRemap(condition=IfCondition(do_tf_remapping), src='/tf_static', dst='tf_static'),
         Node(
             condition=IfCondition(is_empty_namespace),
             package='robot_state_publisher',
@@ -176,23 +219,23 @@ def generate_launch_description():
                         ' structure:=', LaunchConfiguration('structure'),
                         # Must append the trailing slash when a namespace is active
                         ' namespace:=', LaunchConfiguration('namespace'), '/',
+                        ' tf_namespace:=', tf_namespace, '/',
                         ' gazebo:=', LaunchConfiguration('gazebo')
                     ]), value_type=str),
                 'use_sim_time': LaunchConfiguration('use_sim_time')
             }],
         ),
+        # TF Tree (joint_state_publisher)
+        Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            namespace=LaunchConfiguration('namespace'),
+            parameters=[{
+                'use_sim_time': LaunchConfiguration('use_sim_time')
+            }]
+        )
     ])
-
-    # TF Tree
-    joint_state_publisher_node = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        namespace=LaunchConfiguration('namespace'),
-        parameters=[{
-            'use_sim_time': LaunchConfiguration('use_sim_time')
-        }]
-    )
 
     ld = LaunchDescription()
     ld.add_action(lidar_arg)
@@ -201,9 +244,9 @@ def generate_launch_description():
     ld.add_action(gazebo_arg)
     ld.add_action(description_file)
     ld.add_action(namespace_arg)
+    ld.add_action(declare_do_tf_remapping_arg)
     ld.add_action(use_sim_time)
     ld.add_action(robot_model)
-    ld.add_action(joint_state_publisher_node)
     ld.add_action(OpaqueFunction(function=start_bridge))
     ld.add_action(OpaqueFunction(function=start_camera))
 

@@ -4,8 +4,8 @@
   gz_type_name: "gz.msgs.Twist"
   direction: ROS_TO_GZ
 
-- ros_topic_name: "/tf"
-  gz_topic_name: "/tf"
+- ros_topic_name: "<tf_namespace>/tf"
+  gz_topic_name: "<tf_namespace>/tf"
   ros_type_name: "tf2_msgs/msg/TFMessage"
   gz_type_name: "gz.msgs.Pose_V"
   direction: GZ_TO_ROS
@@ -34,8 +34,8 @@
   gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "<robot_namespace>/rgbd_camera/points"
-  gz_topic_name: "<robot_namespace>/rgbd_camera/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
-  direction: GZ_TO_ROS
+# - ros_topic_name: "<robot_namespace>/rgbd_camera/points"
+#   gz_topic_name: "<robot_namespace>/rgbd_camera/points"
+#   ros_type_name: "sensor_msgs/msg/PointCloud2"
+#   gz_type_name: "gz.msgs.PointCloudPacked"
+#   direction: GZ_TO_ROS

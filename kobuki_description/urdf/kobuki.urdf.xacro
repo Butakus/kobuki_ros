@@ -15,6 +15,12 @@
         This is required for compatibility with the base operation without namespace.
   -->
   <xacro:arg name="namespace" default="" />
+  <!-- The tf namespace is independent from the regular namespace.
+       This namespace is only applied to the /tf topic.
+       This allows having multiple robots with namespaces either sharing a common /tf topic
+       or with independent /<namespace>/tf topics.
+  -->
+  <xacro:arg name="tf_namespace" default="" />
   <xacro:arg name="gazebo" default="false" />
 
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki_base.urdf.xacro" />
@@ -53,7 +59,7 @@
 
   <xacro:if value="$(arg gazebo)">
     <xacro:include filename="$(find kobuki_description)/urdf/kobuki_gazebo.urdf.xacro"/>
-    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)" namespace="$(arg namespace)"/>
+    <xacro:kobuki_gazebo lidar="$(arg lidar)" camera="$(arg camera)" namespace="$(arg namespace)" tf_namespace="$(arg tf_namespace)"/>
   </xacro:if>
   
 </robot>
