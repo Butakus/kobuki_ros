@@ -55,6 +55,11 @@ def generate_launch_description():
         default_value='',
         description='Namespace to apply to the nodes, topics and TF frames'
     )
+    declare_do_tf_remapping_arg = DeclareLaunchArgument(
+        'do_tf_remapping',
+        default_value='False',
+        description='Whether to remap the tf topic to independent namespaces (/tf -> tf)',
+    )
 
     robot_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -63,6 +68,7 @@ def generate_launch_description():
         launch_arguments={
             'namespace': LaunchConfiguration('namespace'),
             'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'do_tf_remapping': LaunchConfiguration('do_tf_remapping'),
             'gazebo': 'true',
             'camera': LaunchConfiguration('camera'),
             'lidar': LaunchConfiguration('lidar'),
@@ -100,6 +106,7 @@ def generate_launch_description():
     ld.add_action(use_sim_time_arg)
     ld.add_action(name_arg)
     ld.add_action(namespace_arg)
+    ld.add_action(declare_do_tf_remapping_arg)
     ld.add_action(robot_description)
     ld.add_action(gazebo_spawn_robot)
 
