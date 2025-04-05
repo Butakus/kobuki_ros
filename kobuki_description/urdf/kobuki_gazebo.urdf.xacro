@@ -91,12 +91,7 @@
           </camera>
         </sensor>
       </gazebo>
-
-      <gazebo reference="$(arg namespace)camera_rgb_optical_frame">
-        <pose>0 0 0 ${-M_PI/2} 0 ${-M_PI/2}</pose>
-      </gazebo>
     </xacro:if>
-    
 
   </xacro:macro>
 </robot>
