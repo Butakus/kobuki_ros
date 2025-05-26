@@ -23,12 +23,14 @@ target_include_directories(kobuki_random_walker PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
 )
-ament_target_dependencies(kobuki_random_walker
-  "geometry_msgs"
-  "kobuki_ros_interfaces"
-  "rclcpp"
-  "rclcpp_components"
-  "std_msgs"
+target_link_libraries(kobuki_random_walker PUBLIC
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${kobuki_ros_interfaces_TARGETS}
+  ${std_msgs_TARGETS}
+)
+target_include_directories(kobuki_random_walker PUBLIC
+  ${rclcpp_components_INCLUDE_DIRS}
 )
 
 rclcpp_components_register_node(kobuki_random_walker
@@ -36,6 +38,7 @@ rclcpp_components_register_node(kobuki_random_walker
   EXECUTABLE kobuki_random_walker_node)
 
 install(TARGETS kobuki_random_walker
+  EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -47,5 +50,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories("include/${PROJECT_NAME}")
+ament_export_libraries(kobuki_random_walker)
+ament_export_targets(${PROJECT_NAME})
 
 ament_package()

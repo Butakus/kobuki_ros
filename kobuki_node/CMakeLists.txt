@@ -32,27 +32,27 @@ add_library(kobuki_ros SHARED
   src/kobuki_ros.cpp
   src/odometry.cpp
 )
-ament_target_dependencies(kobuki_ros
-  "angles"
-  "diagnostic_msgs"
-  "diagnostic_updater"
-  "geometry_msgs"
-  "kobuki_core"
-  "kobuki_ros_interfaces"
-  "nav_msgs"
-  "rclcpp"
-  "rclcpp_components"
-  "sensor_msgs"
-  "std_msgs"
-  "tf2"
-  "tf2_ros"
-)
 target_link_libraries(kobuki_ros
+  angles::angles
+  diagnostic_updater::diagnostic_updater
+  kobuki_core::kobuki_core
+  rclcpp::rclcpp
+  tf2::tf2
+  tf2_ros::tf2_ros
   ecl_errors::ecl_errors
   ecl_exceptions::ecl_exceptions
   ecl_geometry::ecl_geometry
   ecl_linear_algebra::ecl_linear_algebra
   ecl_sigslots::ecl_sigslots
+  ${diagnostic_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${kobuki_ros_interfaces_TARGETS}
+)
+target_include_directories(kobuki_ros PUBLIC
+  ${rclcpp_components_INCLUDE_DIRS}
 )
 
 rclcpp_components_register_node(kobuki_ros

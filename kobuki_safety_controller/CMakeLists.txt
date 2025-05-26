@@ -15,12 +15,18 @@ ecl_enable_cxx_warnings()
 include_directories(include)
 
 add_library(kobuki_safety_controller SHARED src/safety_controller.cpp)
-ament_target_dependencies(kobuki_safety_controller
-  "geometry_msgs"
-  "kobuki_ros_interfaces"
-  "rclcpp"
-  "rclcpp_components"
-  "std_msgs"
+target_include_directories(kobuki_safety_controller PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)
+target_link_libraries(kobuki_safety_controller
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  ${kobuki_ros_interfaces_TARGETS}
+  ${std_msgs_TARGETS}
+)
+target_include_directories(kobuki_safety_controller PUBLIC
+  ${rclcpp_components_INCLUDE_DIRS}
 )
 
 rclcpp_components_register_node(kobuki_safety_controller
@@ -28,6 +34,7 @@ rclcpp_components_register_node(kobuki_safety_controller
   EXECUTABLE kobuki_safety_controller_node)
 
 install(TARGETS kobuki_safety_controller
+  EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -38,5 +45,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories("include/${PROJECT_NAME}")
+ament_export_libraries(${PROJECT_NAME})
+ament_export_targets(${PROJECT_NAME})
 
 ament_package()
