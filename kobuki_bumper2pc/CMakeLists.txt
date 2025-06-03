@@ -23,12 +23,14 @@ target_include_directories(kobuki_bumper2pc PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>"
 )
-ament_target_dependencies(kobuki_bumper2pc
-  "kobuki_ros_interfaces"
-  "rcl_interfaces"
-  "rclcpp"
-  "rclcpp_components"
-  "sensor_msgs"
+target_link_libraries(kobuki_bumper2pc
+  rclcpp::rclcpp
+  ${kobuki_ros_interfaces_TARGETS}
+  ${rcl_interfaces_TARGETS}
+  ${sensor_msgs_TARGETS}
+)
+target_include_directories(kobuki_bumper2pc PUBLIC
+  ${rclcpp_components_INCLUDE_DIRS}
 )
 
 rclcpp_components_register_node(kobuki_bumper2pc
