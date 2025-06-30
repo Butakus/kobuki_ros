@@ -61,12 +61,14 @@ AutoDockingROS::AutoDockingROS(const rclcpp::NodeOptions & options) : rclcpp::No
   debug_ = this->create_subscription<std_msgs::msg::String>(
     "debug/mode_shift", 10, std::bind(&AutoDockingROS::debugCb, this, std::placeholders::_1));
 
+  auto qos = rclcpp::SensorDataQoS().reliable();
+
   odom_sub_ = std::make_shared<message_filters::Subscriber<nav_msgs::msg::Odometry>>(
-    this, "odom", rclcpp::SensorDataQoS().reliable());
+    this, "odom", qos.get_rmw_qos_profile());
   core_sub_ = std::make_shared<message_filters::Subscriber<kobuki_ros_interfaces::msg::SensorState>>(
-    this, "sensors/core", rclcpp::SensorDataQoS().reliable());
+    this, "sensors/core", qos.get_rmw_qos_profile());
   ir_sub_ = std::make_shared<message_filters::Subscriber<kobuki_ros_interfaces::msg::DockInfraRed>>(
-    this, "sensors/dock_ir", rclcpp::SensorDataQoS().reliable());
+    this, "sensors/dock_ir", qos.get_rmw_qos_profile());
 
   sync_ = std::make_shared<message_filters::Synchronizer<SyncPolicy>>(SyncPolicy(10), *odom_sub_, *core_sub_, *ir_sub_);
   sync_->registerCallback(&AutoDockingROS::syncCb, this);
