@@ -30,7 +30,7 @@
   <xacro:property name="r200_cam_depth_offset" value="0.01"/>
 
 
-  <xacro:macro name="sensor_r200" params="parent">
+  <xacro:macro name="sensor_r200" params="parent namespace">
 
     
     <!--
@@ -38,12 +38,12 @@
     -->
     
     <!-- right bracket end -->
-    <joint name="bracket_end_right_joint" type="fixed">
+    <joint name="$(arg namespace)bracket_end_right_joint" type="fixed">
       <origin xyz="${pole_px} ${pole_py} ${pole_pz}" rpy="0 0 0"/>
       <parent link="${parent}"/>
-      <child link="bracket_end_right" />
+      <child link="$(arg namespace)bracket_end_right" />
     </joint>
-    <link name="bracket_end_right">
+    <link name="$(arg namespace)bracket_end_right">
     <visual>
        <origin xyz="${-r200_bracket_end_width/2} ${r200_bracket_end_offset_py} ${r200_bracket_end_offset_pz}" rpy="0 0 ${-M_PI/2}"/>
         <geometry>
@@ -54,12 +54,12 @@
     </link>
  
     <!-- center main bracket -->
-    <joint name="bracket_joint" type="fixed">
+    <joint name="$(arg namespace)bracket_joint" type="fixed">
       <origin xyz="${r200_bracket_width/2} ${r200_bracket_offset_py} ${r200_bracket_offset_pz}" rpy="0 0 0"/>
-      <parent link="bracket_end_right"/>
-      <child link="bracket" />
+      <parent link="$(arg namespace)bracket_end_right"/>
+      <child link="$(arg namespace)bracket" />
     </joint>
-    <link name="bracket">
+    <link name="$(arg namespace)bracket">
     <visual>
        <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}"/>
         <geometry>
@@ -70,12 +70,12 @@
     </link>
  
     <!-- left bracket end -->
-    <joint name="bracket_end_left_joint" type="fixed">
+    <joint name="$(arg namespace)bracket_end_left_joint" type="fixed">
       <origin xyz="${-r200_bracket_width/2} ${r200_bracket_length - r200_bracket_offset_py} ${-r200_bracket_offset_pz}" rpy="0 0 0"/>
-      <parent link="bracket"/>
-      <child link="bracket_end_left" />
+      <parent link="$(arg namespace)bracket"/>
+      <child link="$(arg namespace)bracket_end_left" />
     </joint>
-    <link name="bracket_end_left">
+    <link name="$(arg namespace)bracket_end_left">
     <visual>
        <origin xyz="${r200_bracket_end_width/2} 0 ${-r200_bracket_end_offset_pz}" rpy="0 0 ${M_PI/2}"/>
         <geometry>
@@ -86,12 +86,12 @@
     </link>
  
     <!-- camera body -->
-    <joint name="camera_joint" type="fixed">
+    <joint name="$(arg namespace)camera_joint" type="fixed">
       <origin xyz="${r200_cam_offset_px} ${r200_cam_offset_py} ${r200_cam_offset_pz}" rpy="0 0 0"/>
-      <parent link="bracket"/>
-      <child link="camera_link" />
+      <parent link="$(arg namespace)bracket"/>
+      <child link="$(arg namespace)camera_link" />
     </joint>
-    <link name="camera_link">
+    <link name="$(arg namespace)camera_link">
       <visual>
        <origin xyz="0 0 0" rpy="${M_PI/2} 0 ${M_PI/2}"/>
         <geometry>
@@ -103,7 +103,7 @@
         <geometry>
           <box size="0.130 0.567 0.118"/>
         </geometry>
-      </collision>-->
+      </collision>
  
       <!-- This inertial field needs doesn't contain reliable data!! -->
      <inertial>
@@ -120,19 +120,19 @@
     ==  RGB joints & links ==
     -->
 
-    <joint name="camera_rgb_joint" type="fixed">
+    <joint name="$(arg namespace)camera_rgb_joint" type="fixed">
       <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py} ${r200_cam_rgb_pz}" rpy="0 0 0"/>
-      <parent link="camera_link"/>
-      <child link="camera_rgb_frame" />
+      <parent link="$(arg namespace)camera_link"/>
+      <child link="$(arg namespace)camera_rgb_frame" />
     </joint>
-    <link name="camera_rgb_frame"/>
+    <link name="$(arg namespace)camera_rgb_frame"/>
 
-    <joint name="camera_rgb_optical_joint" type="fixed">
+    <joint name="$(arg namespace)camera_rgb_optical_joint" type="fixed">
       <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
-      <parent link="camera_rgb_frame" />
-      <child link="camera_rgb_optical_frame" />
+      <parent link="$(arg namespace)camera_rgb_frame" />
+      <child link="$(arg namespace)camera_rgb_optical_frame" />
     </joint>
-    <link name="camera_rgb_optical_frame"/>
+    <link name="$(arg namespace)camera_rgb_optical_frame"/>
     
   
 
@@ -140,19 +140,19 @@
     ==  Depth joints & links ==
     -->
 
-    <joint name="camera_depth_joint" type="fixed">
+    <joint name="$(arg namespace)camera_depth_joint" type="fixed">
         <origin xyz="0 ${r200_cam_depth_offset} 0" rpy="0 0 0" />
-        <parent link="camera_rgb_frame" />
-        <child link="camera_depth_frame" />
+        <parent link="$(arg namespace)camera_rgb_frame" />
+        <child link="$(arg namespace)camera_depth_frame" />
     </joint>
-    <link name="camera_depth_frame"/>
+    <link name="$(arg namespace)camera_depth_frame"/>
 
-    <joint name="camera_depth_optical_joint" type="fixed">
+    <joint name="$(arg namespace)camera_depth_optical_joint" type="fixed">
         <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
-        <parent link="camera_depth_frame" />
-        <child link="camera_depth_optical_frame" />
+        <parent link="$(arg namespace)camera_depth_frame" />
+        <child link="$(arg namespace)camera_depth_optical_frame" />
     </joint>
-    <link name="camera_depth_optical_frame"/>
+    <link name="$(arg namespace)camera_depth_optical_frame"/>
     
   	
   	<!-- Simulation sensor -->
