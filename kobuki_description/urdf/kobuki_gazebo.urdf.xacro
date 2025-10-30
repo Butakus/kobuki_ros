@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <robot name="kobuki_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="kobuki_gazebo" params="lidar camera namespace tf_namespace">
+  <xacro:macro name="kobuki_gazebo" params="lidar camera namespace tf_namespace lidar_range:=3.0">
 
     <gazebo>
       <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
@@ -49,7 +49,7 @@
               </scan>
               <range>
                 <min>0.17</min>
-                <max>3.5</max>
+                <max>$(arg lidar_range)</max>
                 <resolution>0.015000</resolution>
               </range>
               <noise>

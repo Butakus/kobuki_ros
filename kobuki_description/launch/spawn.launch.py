@@ -39,6 +39,12 @@ def generate_launch_description():
         description='Enable lidar sensor'
     )
 
+    lidar_range_arg = DeclareLaunchArgument(
+        'lidar_range',
+        default_value='3.0',
+        description='Maximum range of the lidar sensor in meters'
+    )
+
     camera_arg = DeclareLaunchArgument(
         'camera',
         default_value='true',
@@ -72,6 +78,7 @@ def generate_launch_description():
             'gazebo': 'true',
             'camera': LaunchConfiguration('camera'),
             'lidar': LaunchConfiguration('lidar'),
+            'lidar_range': LaunchConfiguration('lidar_range'),
         }.items()
     )
 
@@ -103,6 +110,7 @@ def generate_launch_description():
     ld.add_action(declare_yaw_cmd)
     ld.add_action(camera_arg)
     ld.add_action(lidar_arg)
+    ld.add_action(lidar_range_arg)
     ld.add_action(use_sim_time_arg)
     ld.add_action(name_arg)
     ld.add_action(namespace_arg)
