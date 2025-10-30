@@ -145,6 +145,10 @@ def generate_launch_description():
         'lidar', default_value='false',
         description='Enable lidar sensor')
 
+    lidar_range_arg = DeclareLaunchArgument(
+        'lidar_range', default_value='3.0',
+        description='Maximum range of the lidar sensor in meters')
+
     camera_arg = DeclareLaunchArgument(
         'camera', default_value='false',
         description='Enable camera sensor')
@@ -198,6 +202,7 @@ def generate_launch_description():
                     Command([
                         'xacro ', LaunchConfiguration('description_file'),
                         ' lidar:=', LaunchConfiguration('lidar'),
+                        ' lidar_range:=', LaunchConfiguration('lidar_range'),
                         ' camera:=', LaunchConfiguration('camera'),
                         ' structure:=', LaunchConfiguration('structure'),
                         ' gazebo:=', LaunchConfiguration('gazebo')
@@ -215,6 +220,7 @@ def generate_launch_description():
                     Command([
                         'xacro ', LaunchConfiguration('description_file'),
                         ' lidar:=', LaunchConfiguration('lidar'),
+                        ' lidar_range:=', LaunchConfiguration('lidar_range'),
                         ' camera:=', LaunchConfiguration('camera'),
                         ' structure:=', LaunchConfiguration('structure'),
                         # Must append the trailing slash when a namespace is active
@@ -239,6 +245,7 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(lidar_arg)
+    ld.add_action(lidar_range_arg)
     ld.add_action(camera_arg)
     ld.add_action(structure_arg)
     ld.add_action(gazebo_arg)
