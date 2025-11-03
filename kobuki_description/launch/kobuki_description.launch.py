@@ -13,29 +13,30 @@
 # limitations under the License.
 
 import os
-import yaml
 import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node, SetRemap, SetParameter, PushROSNamespace
-from launch_ros.descriptions import ParameterValue
+from launch.actions import DeclareLaunchArgument, GroupAction, OpaqueFunction
+from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import (
     AndSubstitution,
     AnySubstitution,
     Command,
+    EqualsSubstitution,
     IfElseSubstitution,
-    NotSubstitution
+    LaunchConfiguration,
+    NotSubstitution,
 )
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, GroupAction
-from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import LaunchConfiguration, EqualsSubstitution
+from launch_ros.actions import Node, PushROSNamespace, SetParameter, SetRemap
+from launch_ros.descriptions import ParameterValue
 
 
 def modify_yaml_with_namespace(original_yaml_path, namespace, tf_namespace):
-    """ Replace all instances of <robot_namespace> in the yaml file
-        with the corresponding namespace value.
-        This creates a temp file with the result and returns its path.
+    """
+    Replace all instances of <robot_namespace> in the yaml file with the namespace value.
+
+    This creates a temp file with the result and returns its path.
     """
     with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as temp_output_yaml:
         temp_yaml_path = temp_output_yaml.name
@@ -50,8 +51,8 @@ def modify_yaml_with_namespace(original_yaml_path, namespace, tf_namespace):
                 if key_tf in line:
                     line = line.replace(key_tf, tf_prefix)
                 temp_output_yaml.write(line)
-            yaml_data = yaml.safe_load(yaml_file)
     return temp_yaml_path
+
 
 def start_bridge(context):
     if LaunchConfiguration('gazebo').perform(context) == 'true':
@@ -97,7 +98,10 @@ def start_bridge(context):
 
 
 def start_camera(context):
-    if LaunchConfiguration('camera').perform(context) == 'true' and LaunchConfiguration('gazebo').perform(context) == 'true':
+    if (
+        LaunchConfiguration('camera').perform(context) == 'true' and
+        LaunchConfiguration('gazebo').perform(context) == 'true'
+    ):
 
         do_tf_remapping = LaunchConfiguration('do_tf_remapping')
         namespace = LaunchConfiguration('namespace').perform(context)
@@ -136,6 +140,7 @@ def start_camera(context):
         return [camera_nodes]
 
     return []
+
 
 def generate_launch_description():
 
