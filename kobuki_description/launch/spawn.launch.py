@@ -19,13 +19,12 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
-
     # Initial robot pose
     declare_x_cmd = DeclareLaunchArgument('x', default_value='0.0')
     declare_y_cmd = DeclareLaunchArgument('y', default_value='0.0')
@@ -83,24 +82,24 @@ def generate_launch_description():
     )
 
     gazebo_spawn_robot = Node(
-        package="ros_gz_sim",
-        executable="create",
-        output="screen",
-        namespace = LaunchConfiguration('namespace'),
+        package='ros_gz_sim',
+        executable='create',
+        output='screen',
+        namespace=LaunchConfiguration('namespace'),
         arguments=[
-            "-name",
+            '-name',
             LaunchConfiguration('name'),
-            "-topic",
-            "robot_description",
-            "-x", LaunchConfiguration('x'),
-            "-y", LaunchConfiguration('y'),
-            "-z", LaunchConfiguration('z'),
-            "-R", LaunchConfiguration('R'),
-            "-P", LaunchConfiguration('P'),
-            "-Y", LaunchConfiguration('Y'),
+            '-topic',
+            'robot_description',
+            '-x', LaunchConfiguration('x'),
+            '-y', LaunchConfiguration('y'),
+            '-z', LaunchConfiguration('z'),
+            '-R', LaunchConfiguration('R'),
+            '-P', LaunchConfiguration('P'),
+            '-Y', LaunchConfiguration('Y'),
         ],
     )
-    
+
     ld = LaunchDescription()
     ld.add_action(declare_x_cmd)
     ld.add_action(declare_y_cmd)
